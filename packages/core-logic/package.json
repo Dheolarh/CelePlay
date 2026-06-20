@@ -1,0 +1,10 @@
+{
+  "name": "@celeplay/core-logic",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "zustand": "^4.5.0"
+  }
+}

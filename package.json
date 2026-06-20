@@ -1,0 +1,16 @@
+{
+  "name": "celeplay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Celeplay",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:client": "npm run dev --workspace=game-client",
+    "dev:admin": "npm run dev --workspace=admin-panel",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces"
+  }
+}
