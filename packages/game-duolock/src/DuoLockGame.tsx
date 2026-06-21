@@ -50,6 +50,14 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
     return () => clearInterval(timer);
   }, [isPlaying, isPreviewing, tickTimer]);
 
+  useEffect(() => {
+    if (timeLeft <= 10 && timeLeft > 0 && isPlaying) {
+      const audio = new Audio('/assets/sounds/beep.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+    }
+  }, [timeLeft, isPlaying]);
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
@@ -85,6 +93,14 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+          
+          @keyframes flashTimerText {
+            0%, 100% { color: white !important; background-color: #ef4444 !important; border-color: #ef4444 !important; }
+            50% { color: ${themePrimaryColor} !important; background-color: white !important; border-color: ${themePrimaryColor} !important; }
+          }
+          .timer-flash {
+            animation: flashTimerText 1s infinite;
+          }
         `}
       </style>
       
@@ -119,7 +135,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
             boxSizing: 'border-box',
             zIndex: 10
           }}>
-            <div style={{ 
+            <div className={timeLeft <= 10 && timeLeft > 0 && !isPreviewing ? "timer-flash" : ""} style={{ 
               backgroundColor: 'white', 
               color: isPreviewing ? themeSecondaryColor : themePrimaryColor, 
               border: `2.5px solid ${isPreviewing ? themeSecondaryColor : themePrimaryColor}`,

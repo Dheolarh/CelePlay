@@ -34,7 +34,7 @@ export const GameSelectionScreen: React.FC = () => {
     { id: 'flipizi', name: 'Flipizi', logo: '/assets/static/flipizi.webp', path: '#', customHeight: '45px' },
     { id: 'layerz', name: 'Layerz', logo: '/assets/static/layerz.webp', path: '#', customHeight: '45px' },
     { id: 'square15', name: 'Square 15', logo: '/assets/static/square15.webp', path: '#', customHeight: '65px' },
-    { id: 'kalendily', name: 'Kalendilly', logo: '/assets/static/kalendily.webp', path: '#', customHeight: '65px' },
+    { id: 'kalendily', name: 'Kalendilly', logo: '/assets/static/kalendily.webp', path: '/kalendily', customHeight: '65px' },
   ];
 
   return (
@@ -89,12 +89,10 @@ export const GameSelectionScreen: React.FC = () => {
           </svg>
         </div>
 
-        {/* Scrollable Game List */}
-        <div className="custom-scrollbar animate-slide-up delay-300" style={{
+        {/* Static Game List */}
+        <div className="animate-slide-up delay-300" style={{
           width: '100%',
           flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',

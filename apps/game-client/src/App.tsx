@@ -8,6 +8,7 @@ import { CodeEnterScreen } from './pages/CodeEnterScreen';
 import { RegistrationScreen } from './pages/RegistrationScreen';
 import { GameSelectionScreen } from './pages/GameSelectionScreen';
 import { DuoLockScreen } from './pages/DuoLockScreen';
+import { KalendilyScreen } from './pages/KalendilyScreen';
 import { LeaderboardScreen } from './pages/LeaderboardScreen';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/register" element={<RegistrationScreen />} />
             <Route path="/games" element={<GameSelectionScreen />} />
             <Route path="/duolock" element={<DuoLockScreen />} />
+            <Route path="/kalendily" element={<KalendilyScreen />} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
           </Routes>
         </BrowserRouter>
