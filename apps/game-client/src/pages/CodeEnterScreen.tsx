@@ -116,16 +116,12 @@ export const CodeEnterScreen: React.FC = () => {
 
         <div style={{ zIndex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           
-          <h1 className="animate-slide-up" style={{ 
-            fontSize: '38px', 
-            fontWeight: 800, 
-            color: '#111', 
-            marginBottom: '10px',
-            textAlign: 'center',
-            letterSpacing: '-1px'
-          }}>
-            Celeplay
-          </h1>
+          <img 
+            className="animate-slide-up" 
+            src="/assets/static/codescreenceleplay.webp" 
+            alt="Celeplay" 
+            style={{ width: '220px', objectFit: 'contain', marginBottom: '15px' }}
+          />
           
           <p className="animate-slide-up delay-100" style={{
             fontSize: '16px',

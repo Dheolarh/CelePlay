@@ -65,16 +65,12 @@ export const SplashScreen: React.FC = () => {
           position: 'relative'
         }}>
           
-          <h1 className="animate-pulse-slow" style={{ 
-            fontSize: '56px', 
-            fontWeight: 900, 
-            color: 'white', 
-            margin: 0,
-            letterSpacing: '-2px',
-            textShadow: '0 10px 30px rgba(255,255,255,0.1)'
-          }}>
-            Celeplay
-          </h1>
+          <img 
+            className="animate-pulse-slow"
+            src="/assets/static/splashscreenceleplay.webp"
+            alt="Celeplay"
+            style={{ width: '280px', objectFit: 'contain' }}
+          />
           
           <div className="animate-slide-up delay-200" style={{
             position: 'absolute',
@@ -86,9 +82,11 @@ export const SplashScreen: React.FC = () => {
             <p style={{ margin: 0, color: '#888', fontSize: '12px', fontWeight: 600, letterSpacing: '4px', textTransform: 'uppercase' }}>
               Powered By
             </p>
-            <p style={{ margin: '4px 0 0 0', color: 'white', fontSize: '20px', fontWeight: 800, letterSpacing: '1px' }}>
-              GAMOO
-            </p>
+            <img 
+              src="/assets/static/Gamoo logo.webp" 
+              alt="Gamoo" 
+              style={{ marginTop: '8px', height: '28px', objectFit: 'contain' }}
+            />
           </div>
 
         </div>

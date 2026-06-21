@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { useAudio } from '../context/AudioContext';
 
 export const RegistrationScreen: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { setBgMusicVolume } = useAudio();
   
+  useEffect(() => {
+    setBgMusicVolume(0.5);
+  }, [setBgMusicVolume]);
+
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');

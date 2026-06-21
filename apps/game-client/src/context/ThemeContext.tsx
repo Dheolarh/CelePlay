@@ -11,6 +11,7 @@ export interface Theme {
   logo_url: string;
   leaderboard_title_url: string;
   stadium_bg_url: string;
+  bg_music_url: string;
 }
 
 // Fallback theme based on the "70th Great Aliko" wireframe
@@ -20,10 +21,11 @@ export const fallbackTheme: Theme = {
   name: '70th Great Aliko',
   primary_color: '#1a237e', // Dark Blue from wireframe
   secondary_color: '#d32f2f', // Red from wireframe
-  header_banner_url: '/assets/banner.webp',
-  logo_url: '/assets/logo.png',
-  leaderboard_title_url: '/assets/logo.png',
-  stadium_bg_url: '/assets/gameBackground.webp',
+  header_banner_url: '/assets/dynamic/banner.webp',
+  logo_url: '/assets/dynamic/regLogo.webp',
+  leaderboard_title_url: '/assets/dynamic/leaderboard ribbon.webp',
+  stadium_bg_url: '/assets/dynamic/gameBackground.webp',
+  bg_music_url: '/assets/sounds/bg.mp3',
 };
 
 interface ThemeContextType {
