@@ -66,20 +66,22 @@ export const LeaderboardScreen: React.FC = () => {
         zIndex: 0
       }} />
 
-      {/* Scaled Virtual Container */}
-      <div className="animate-slide-up" style={{
-        width: '400px',
-        height: '850px',
-        transform: `scale(${scale})`,
-        transformOrigin: 'center center',
-        position: 'relative',
-        zIndex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '50px 20px 40px',
-        boxSizing: 'border-box'
-      }}>
+      {/* Animation Wrapper */}
+      <div className="animate-slide-up" style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        {/* Scaled Virtual Container */}
+        <div style={{
+          width: '400px',
+          height: '850px',
+          transform: `scale(${scale})`,
+          transformOrigin: 'center center',
+          position: 'relative',
+          zIndex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '50px 20px 40px',
+          boxSizing: 'border-box'
+        }}>
         
         {/* Top Logo */}
         <img src={theme.logo_url} alt="Logo" style={{ height: '70px', marginBottom: '15px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))' }} />
@@ -201,6 +203,7 @@ export const LeaderboardScreen: React.FC = () => {
           EXIT
         </button>
 
+      </div>
       </div>
     </div>
   );
