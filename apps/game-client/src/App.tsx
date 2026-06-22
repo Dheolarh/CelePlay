@@ -9,6 +9,7 @@ import { RegistrationScreen } from './pages/RegistrationScreen';
 import { GameSelectionScreen } from './pages/GameSelectionScreen';
 import { DuoLockScreen } from './pages/DuoLockScreen';
 import { KalendilyScreen } from './pages/KalendilyScreen';
+import { LayerzScreen } from './pages/LayerzScreen';
 import { LeaderboardScreen } from './pages/LeaderboardScreen';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
             <Route path="/games" element={<GameSelectionScreen />} />
             <Route path="/duolock" element={<DuoLockScreen />} />
             <Route path="/kalendily" element={<KalendilyScreen />} />
+            <Route path="/layerz" element={<LayerzScreen />} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
           </Routes>
         </BrowserRouter>

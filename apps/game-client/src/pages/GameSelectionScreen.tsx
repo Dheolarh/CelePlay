@@ -32,7 +32,7 @@ export const GameSelectionScreen: React.FC = () => {
   const games = [
     { id: 'duolock', name: 'DuoLock', logo: '/assets/static/duolock.webp', path: '/duolock', customHeight: '65px' },
     { id: 'flipizi', name: 'Flipizi', logo: '/assets/static/flipizi.webp', path: '#', customHeight: '45px' },
-    { id: 'layerz', name: 'Layerz', logo: '/assets/static/layerz.webp', path: '#', customHeight: '45px' },
+    { id: 'layerz', name: 'Layerz', logo: '/assets/static/layerz.webp', path: '/layerz', customHeight: '45px' },
     { id: 'square15', name: 'Square 15', logo: '/assets/static/square15.webp', path: '#', customHeight: '65px' },
     { id: 'kalendily', name: 'Kalendilly', logo: '/assets/static/kalendily.webp', path: '/kalendily', customHeight: '65px' },
   ];
@@ -100,7 +100,7 @@ export const GameSelectionScreen: React.FC = () => {
           paddingBottom: '80px',
           paddingTop: '10px'
         }}>
-          {games.map((game, index) => (
+          {games.map((game) => (
             <div 
               key={game.id}
               onClick={() => game.path !== '#' && navigate(game.path)}
