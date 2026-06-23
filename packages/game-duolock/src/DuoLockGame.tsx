@@ -204,7 +204,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
                 width: '100%',
                 height: '100%',
                 backfaceVisibility: 'hidden',
-                backgroundColor: themeSecondaryColor,
+                backgroundColor: themePrimaryColor,
                 borderRadius: '8px',
                 backgroundImage: `url(${themeLogoUrl})`,
                 backgroundSize: '60%',

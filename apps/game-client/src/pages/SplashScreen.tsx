@@ -51,6 +51,7 @@ export const SplashScreen: React.FC = () => {
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
+        touchAction: 'none',
         fontFamily: "'Outfit', sans-serif"
       }}>
         <div style={{
