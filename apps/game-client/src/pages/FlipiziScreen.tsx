@@ -1,17 +1,17 @@
 import React from 'react';
-import { Square15Game } from '@celeplay/game-square15';
+import { FlipiziGame } from '@celeplay/game-flipizi';
 import { useNavigate } from 'react-router-dom';
 
-export const Square15Screen: React.FC = () => {
+export const FlipiziScreen: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <Square15Game 
+    <FlipiziGame 
       themeBannerUrl="/assets/dynamic/kalendilybanner.webp" // Based on the user screenshot it might be standard birthday banner
-      themePrimaryColor="#1d4ed8" // Dark blue for timer
+      themePrimaryColor="#21235b" // Dark blue for background and theme
       themeSecondaryColor="#ef4444" // Red for score
       onGameEnd={(score, maxScore, timeTaken) => {
-        console.log(`Square 15 ended! Score: ${score}/${maxScore}, Time: ${timeTaken}s`);
+        console.log(`Flipizi ended! Score: ${score}/${maxScore}, Time: ${timeTaken}s`);
         navigate('/leaderboard'); 
       }}
       onExit={() => {

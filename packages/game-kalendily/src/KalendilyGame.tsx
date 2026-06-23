@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useKalendilyStore, KalendilyQuestion } from './store';
+import { useKalendilyStore } from './store';
+import type { KalendilyQuestion } from './store';
 import { getDaysInMonth, getFirstDayOfMonth, monthNames, formatTime } from './utils';
 
 export interface KalendilyGameProps {
@@ -13,13 +14,11 @@ export interface KalendilyGameProps {
 }
 
 export const KalendilyGame: React.FC<KalendilyGameProps> = ({
-  themeLogoUrl,
   themeBannerUrl,
   themePrimaryColor,
   themeSecondaryColor,
   questions: initialQuestions,
-  onGameEnd,
-  onExit
+  onGameEnd
 }) => {
   const { 
     questions,
@@ -139,6 +138,7 @@ export const KalendilyGame: React.FC<KalendilyGameProps> = ({
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      touchAction: 'none',
       fontFamily: "'Outfit', sans-serif",
       position: 'relative'
     }}>
@@ -397,80 +397,83 @@ export const KalendilyGame: React.FC<KalendilyGameProps> = ({
           justifyContent: 'center',
           alignItems: 'center'
         }}>
-          <div className="animate-slide-up" style={{
-            width: '400px',
-            height: '850px',
-            transform: `scale(${scale})`,
-            transformOrigin: 'center center',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '60px 30px',
-            boxSizing: 'border-box'
-          }}>
-            <h2 style={{ color: 'white', fontSize: '24px', fontWeight: 900, marginBottom: '5px', letterSpacing: '2px' }}>
-              ANSWER
-            </h2>
-            <div style={{ 
-              backgroundColor: 'white', 
-              color: themePrimaryColor, 
-              padding: '10px 30px', 
-              borderRadius: '30px',
-              fontSize: '28px',
-              fontWeight: 900,
-              marginBottom: '50px'
-            }}>
-              {currentQ.answerText}
-            </div>
-
+          <div className="animate-slide-up" style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <div style={{
-              width: '200px',
-              height: '200px',
-              borderRadius: '50%',
-              backgroundColor: 'white',
-              overflow: 'hidden',
-              border: `6px solid white`,
-              boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-              marginBottom: '50px',
-              flexShrink: 0,
+              width: '400px',
+              height: '850px',
+              transform: `scale(${scale})`,
+              transformOrigin: 'center center',
               display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: '40px 30px',
+              boxSizing: 'border-box'
             }}>
-              <img src={currentQ.imageUrl} alt="Answer Visual" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-            </div>
-
-            <p style={{
-              color: 'white',
-              fontSize: '18px',
-              fontWeight: 600,
-              textAlign: 'center',
-              lineHeight: 1.5,
-              marginBottom: '50px'
-            }}>
-              {currentQ.explanation}
-            </p>
-
-            <button 
-              onClick={() => nextQuestion()}
-              style={{
-                backgroundColor: 'white',
-                color: themePrimaryColor,
-                padding: '15px 60px',
+              <h2 style={{ color: 'white', fontSize: '24px', fontWeight: 900, marginBottom: '5px', letterSpacing: '2px' }}>
+                ANSWER
+              </h2>
+              <div style={{ 
+                backgroundColor: 'white', 
+                color: themePrimaryColor, 
+                padding: '10px 20px', 
                 borderRadius: '30px',
-                fontSize: '20px',
+                fontSize: '24px',
                 fontWeight: 900,
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
-                marginTop: 'auto',
-                marginBottom: '40px'
-              }}
-            >
-              CONTINUE
-            </button>
+                whiteSpace: 'nowrap',
+                marginBottom: '30px'
+              }}>
+                {currentQ.answerText}
+              </div>
 
-            <img src="/assets/dynamic/gameselectlogo.webp" alt="Kalendilly" style={{ width: '150px', objectFit: 'contain' }} />
+              <div style={{
+                width: '200px',
+                height: '200px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                overflow: 'hidden',
+                border: `6px solid white`,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                marginBottom: '30px',
+                flexShrink: 0,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <img src={currentQ.imageUrl} alt="Answer Visual" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
+
+              <p style={{
+                color: 'white',
+                fontSize: '18px',
+                fontWeight: 600,
+                textAlign: 'center',
+                lineHeight: 1.5,
+                marginBottom: '20px'
+              }}>
+                {currentQ.explanation}
+              </p>
+
+              <button 
+                onClick={() => nextQuestion()}
+                style={{
+                  backgroundColor: 'white',
+                  color: themePrimaryColor,
+                  padding: '15px 60px',
+                  borderRadius: '30px',
+                  fontSize: '20px',
+                  fontWeight: 900,
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+                  marginTop: 'auto',
+                  marginBottom: '20px'
+                }}
+              >
+                CONTINUE
+              </button>
+
+              <img src="/assets/dynamic/gameselectlogo.webp" alt="Kalendilly" style={{ width: '150px', objectFit: 'contain' }} />
+            </div>
           </div>
         </div>
       )}
@@ -493,7 +496,7 @@ export const KalendilyGame: React.FC<KalendilyGameProps> = ({
           padding: '20px',
           textAlign: 'center'
         }}>
-          <h1 style={{ fontSize: '48px', margin: 0, fontFamily: "'Orbitron', sans-serif" }}>
+          <h1 style={{ fontSize: '36px', margin: 0, fontFamily: "'Orbitron', sans-serif" }}>
             {timeLeft > 0 ? 'COMPLETED!' : 'TIME UP!'}
           </h1>
           <h2 style={{ fontSize: '24px', fontWeight: 400, marginBottom: '20px' }}>

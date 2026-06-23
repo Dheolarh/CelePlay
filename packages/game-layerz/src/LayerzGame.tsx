@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useLayerzStore, LayerPiece } from './store';
+import { useLayerzStore } from './store';
+import type { LayerPiece } from './store';
 
 export interface LayerzGameProps {
   themeBannerUrl: string;
@@ -15,13 +16,11 @@ export const LayerzGame: React.FC<LayerzGameProps> = ({
   themePrimaryColor,
   themeSecondaryColor,
   pieces,
-  onGameEnd,
-  onExit
+  onGameEnd
 }) => {
   const {
     gameState,
     currentPiece,
-    hiddenSlot,
     revealedSlot,
     placedPieces,
     lifelines,
@@ -202,6 +201,7 @@ export const LayerzGame: React.FC<LayerzGameProps> = ({
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      touchAction: 'none',
       fontFamily: "'Outfit', sans-serif",
       position: 'relative',
       userSelect: 'none'

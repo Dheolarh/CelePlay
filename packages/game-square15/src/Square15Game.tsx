@@ -13,8 +13,7 @@ export const Square15Game: React.FC<Square15GameProps> = ({
   themeBannerUrl,
   themePrimaryColor,
   themeSecondaryColor,
-  onGameEnd,
-  onExit
+  onGameEnd
 }) => {
   const {
     grid,
@@ -217,12 +216,6 @@ export const Square15Game: React.FC<Square15GameProps> = ({
     movePiece(index);
   };
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
-
   // We want to format timer as just the number of seconds padded if < 100, wait screenshot shows 180 and 025.
   // It's a 3-digit padded string.
   const formatTimerNumber = (seconds: number) => {
@@ -244,6 +237,7 @@ export const Square15Game: React.FC<Square15GameProps> = ({
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      touchAction: 'none',
       fontFamily: "'Orbitron', sans-serif", // Score & timer use orbitron
       position: 'relative',
       userSelect: 'none'

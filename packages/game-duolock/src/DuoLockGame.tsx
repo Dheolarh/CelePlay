@@ -73,6 +73,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
+      touchAction: 'none',
       fontFamily: "'Outfit', sans-serif",
       position: 'relative'
     }}>

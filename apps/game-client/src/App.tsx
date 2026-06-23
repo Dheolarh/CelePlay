@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AudioProvider } from './context/AudioContext';
@@ -11,6 +11,7 @@ import { DuoLockScreen } from './pages/DuoLockScreen';
 import { KalendilyScreen } from './pages/KalendilyScreen';
 import { LayerzScreen } from './pages/LayerzScreen';
 import { Square15Screen } from './pages/Square15Screen';
+import { FlipiziScreen } from './pages/FlipiziScreen';
 import { LeaderboardScreen } from './pages/LeaderboardScreen';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
             <Route path="/kalendily" element={<KalendilyScreen />} />
             <Route path="/layerz" element={<LayerzScreen />} />
             <Route path="/square15" element={<Square15Screen />} />
+            <Route path="/flipizi" element={<FlipiziScreen />} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
           </Routes>
         </BrowserRouter>
