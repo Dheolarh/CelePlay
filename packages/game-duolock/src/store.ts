@@ -18,7 +18,7 @@ interface DuoLockState {
   isPreviewing: boolean;
   isGameEnded: boolean;
   isWon: boolean;
-  initializeGame: (pairs: { id: string, imageT: string, imageI: string }[]) => void;
+  initializeGame: (pairs: { id: string, imageA: string, imageB: string }[]) => void;
   flipCard: (index: number) => void;
   tickTimer: () => void;
   resetGame: () => void;
@@ -49,8 +49,8 @@ export const useDuoLockStore = create<DuoLockState>((set, get) => ({
     // Flatten pairs into an array of cards
     const deck: Card[] = [];
     pairs.forEach(pair => {
-      deck.push({ id: `${pair.id}-T`, pairId: pair.id, imageUrl: pair.imageT, isFlipped: true, isMatched: false });
-      deck.push({ id: `${pair.id}-I`, pairId: pair.id, imageUrl: pair.imageI, isFlipped: true, isMatched: false });
+      deck.push({ id: `${pair.id}-a`, pairId: pair.id, imageUrl: pair.imageA, isFlipped: true, isMatched: false });
+      deck.push({ id: `${pair.id}-b`, pairId: pair.id, imageUrl: pair.imageB, isFlipped: true, isMatched: false });
     });
 
     // Shuffle deck

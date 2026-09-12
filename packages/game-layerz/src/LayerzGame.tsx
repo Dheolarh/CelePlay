@@ -210,7 +210,7 @@ export const LayerzGame: React.FC<LayerzGameProps> = ({
         {`
           @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
           @keyframes flashTimerText {
-            0%, 100% { color: white !important; background-color: #ef4444 !important; }
+            0%, 100% { color: white !important; background-color: ${themeSecondaryColor} !important; }
             50% { color: white !important; background-color: ${themeSecondaryColor} !important; }
           }
           .timer-flash {
@@ -384,7 +384,7 @@ export const LayerzGame: React.FC<LayerzGameProps> = ({
             style={{
               width: '100%',
               height: '36px',
-              backgroundColor: '#ef4444',
+              backgroundColor: themeSecondaryColor,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
@@ -415,7 +415,7 @@ export const LayerzGame: React.FC<LayerzGameProps> = ({
             style={{
               width: '100%',
               height: '36px',
-              backgroundColor: '#1d4ed8', // Darker blue to match screenshot
+              backgroundColor: themePrimaryColor,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',

@@ -8,7 +8,7 @@ export interface DuoLockGameProps {
   themeSecondaryColor: string;
   onGameEnd: (score: number, timeTaken: number) => void;
   onExit: () => void;
-  cardPairs: { id: string; imageT: string; imageI: string }[];
+  cardPairs: { id: string; imageA: string; imageB: string }[];
 }
 
 export const DuoLockGame: React.FC<DuoLockGameProps> = ({
@@ -96,7 +96,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
           @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
           
           @keyframes flashTimerText {
-            0%, 100% { color: white !important; background-color: #ef4444 !important; border-color: #ef4444 !important; }
+            0%, 100% { color: white !important; background-color: ${themeSecondaryColor} !important; border-color: ${themeSecondaryColor} !important; }
             50% { color: ${themePrimaryColor} !important; background-color: white !important; border-color: ${themePrimaryColor} !important; }
           }
           .timer-flash {

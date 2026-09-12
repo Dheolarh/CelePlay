@@ -154,7 +154,7 @@ export const KalendilyGame: React.FC<KalendilyGameProps> = ({
           
           .flash-incorrect {
             animation: flashRed 0.5s ease 3;
-            background-color: #ef4444 !important;
+            background-color: ${themeSecondaryColor} !important;
             color: white !important;
           }
 
@@ -165,7 +165,7 @@ export const KalendilyGame: React.FC<KalendilyGameProps> = ({
 
           @keyframes flashRed {
             0%, 100% { background-color: #111; }
-            50% { background-color: #ef4444; }
+            50% { background-color: ${themeSecondaryColor}; }
           }
           
           .calendar-day {
@@ -182,7 +182,7 @@ export const KalendilyGame: React.FC<KalendilyGameProps> = ({
           }
 
           @keyframes flashTimerText {
-            0%, 100% { color: white !important; background-color: #ef4444 !important; border-color: #ef4444 !important; }
+            0%, 100% { color: white !important; background-color: ${themeSecondaryColor} !important; border-color: ${themeSecondaryColor} !important; }
             50% { color: #111 !important; background-color: white !important; border-color: ${themeSecondaryColor} !important; }
           }
           .timer-flash {
@@ -257,7 +257,7 @@ export const KalendilyGame: React.FC<KalendilyGameProps> = ({
             boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
           }}>
             <span style={{ fontWeight: 800, fontSize: '18px', color: '#111' }}>{score}</span>
-            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#3b82f6' }} />
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: themePrimaryColor }} />
           </div>
         </div>
 

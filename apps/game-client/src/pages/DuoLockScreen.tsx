@@ -13,16 +13,16 @@ export const DuoLockScreen: React.FC = () => {
     setBgMusicVolume(0.2);
   }, [setBgMusicVolume]);
 
-  // Define pairs using the new fallback assets format (T for text, I for image)
+  // Define the eight DuoLock pairs using the a/b asset naming convention.
   const cardPairs = [
-    { id: 'acs', imageT: '/assets/dynamic/acsT.webp', imageI: '/assets/dynamic/acsI.webp' },
-    { id: 'aeb', imageT: '/assets/dynamic/aebT.webp', imageI: '/assets/dynamic/aebI.webp' },
-    { id: 'aef', imageT: '/assets/dynamic/aefT.webp', imageI: '/assets/dynamic/aefI.webp' },
-    { id: 'aim', imageT: '/assets/dynamic/aimT.webp', imageI: '/assets/dynamic/aimI.webp' },
-    { id: 'ajc', imageT: '/assets/dynamic/ajcT.webp', imageI: '/assets/dynamic/ajcI.webp' },
-    { id: 'anu', imageT: '/assets/dynamic/anuT.webp', imageI: '/assets/dynamic/anuI.webp' },
-    { id: 'avl', imageT: '/assets/dynamic/avlT.webp', imageI: '/assets/dynamic/avlI.webp' },
-    { id: 'moc', imageT: '/assets/dynamic/amcT.webp', imageI: '/assets/dynamic/amcI.webp' },
+    { id: '1', imageA: '/assets/dynamic/1a.webp', imageB: '/assets/dynamic/1b.webp' },
+    { id: '2', imageA: '/assets/dynamic/2a.webp', imageB: '/assets/dynamic/2b.webp' },
+    { id: '3', imageA: '/assets/dynamic/3a.webp', imageB: '/assets/dynamic/3b.webp' },
+    { id: '4', imageA: '/assets/dynamic/4a.webp', imageB: '/assets/dynamic/4b.webp' },
+    { id: '5', imageA: '/assets/dynamic/5a.webp', imageB: '/assets/dynamic/5b.webp' },
+    { id: '6', imageA: '/assets/dynamic/6a.webp', imageB: '/assets/dynamic/6b.webp' },
+    { id: '7', imageA: '/assets/dynamic/7a.webp', imageB: '/assets/dynamic/7b.webp' },
+    { id: '8', imageA: '/assets/dynamic/8a.webp', imageB: '/assets/dynamic/8b.webp' },
   ];
 
   const handleGameEnd = (score: number, timeTaken: number) => {

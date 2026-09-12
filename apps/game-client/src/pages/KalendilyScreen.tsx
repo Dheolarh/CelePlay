@@ -22,7 +22,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 6,
       month: 4, // 0-indexed (May)
       year: 1994,
-      imageUrl: '/assets/dynamic/acsI.webp'
+      imageUrl: '/assets/dynamic/1b.webp'
     },
     {
       id: 'q2',
@@ -32,7 +32,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 26,
       month: 9, // Oct
       year: 2010,
-      imageUrl: '/assets/dynamic/aebI.webp'
+      imageUrl: '/assets/dynamic/2b.webp'
     },
     {
       id: 'q3',
@@ -42,7 +42,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 5,
       month: 2, // Mar
       year: 2014,
-      imageUrl: '/assets/dynamic/aefI.webp'
+      imageUrl: '/assets/dynamic/3b.webp'
     },
     {
       id: 'q4',
@@ -52,7 +52,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 9,
       month: 2, // Mar
       year: 2011,
-      imageUrl: '/assets/dynamic/aimI.webp'
+      imageUrl: '/assets/dynamic/4b.webp'
     },
     {
       id: 'q5',
@@ -62,7 +62,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 14,
       month: 10, // Nov
       year: 2011,
-      imageUrl: '/assets/dynamic/ajcI.webp'
+      imageUrl: '/assets/dynamic/5b.webp'
     },
     {
       id: 'q6',
@@ -72,7 +72,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 10,
       month: 3, // Apr
       year: 1957,
-      imageUrl: '/assets/dynamic/amcI.webp'
+      imageUrl: '/assets/dynamic/8b.webp'
     },
     {
       id: 'q7',
@@ -82,7 +82,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 22,
       month: 4, // May
       year: 2023,
-      imageUrl: '/assets/dynamic/anuI.webp'
+      imageUrl: '/assets/dynamic/6b.webp'
     },
     {
       id: 'q8',
@@ -92,7 +92,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 4,
       month: 8, // Sep
       year: 2013,
-      imageUrl: '/assets/dynamic/avlI.webp'
+      imageUrl: '/assets/dynamic/7b.webp'
     },
     {
       id: 'q9',
@@ -102,7 +102,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 12,
       month: 4, // May
       year: 2007,
-      imageUrl: '/assets/dynamic/acsI.webp'
+      imageUrl: '/assets/dynamic/1b.webp'
     },
     {
       id: 'q10',
@@ -112,7 +112,7 @@ export const KalendilyScreen: React.FC = () => {
       day: 24,
       month: 3, // Apr
       year: 2014,
-      imageUrl: '/assets/dynamic/aebI.webp'
+      imageUrl: '/assets/dynamic/2b.webp'
     }
   ];
 

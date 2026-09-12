@@ -14,13 +14,13 @@ export interface Theme {
   bg_music_url: string;
 }
 
-// Fallback theme based on the "70th Great Aliko" wireframe
+// Fallback theme used before a theme is loaded from the backend.
 export const fallbackTheme: Theme = {
   id: 'fallback',
-  code: 'ALIKO70',
+  code: 'ALLEN',
   name: '70th Great Aliko',
-  primary_color: '#1a237e', // Dark Blue from wireframe
-  secondary_color: '#d32f2f', // Red from wireframe
+  primary_color: '#000001',
+  secondary_color: '#686767',
   header_banner_url: '/assets/dynamic/banner.webp',
   logo_url: '/assets/dynamic/regLogo.webp',
   leaderboard_title_url: '/assets/dynamic/leaderboard ribbon.webp',

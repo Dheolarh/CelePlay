@@ -4,7 +4,7 @@ import { useTheme, fallbackTheme } from '../context/ThemeContext';
 
 export const CodeEnterScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [code, setCode] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,12 +39,12 @@ export const CodeEnterScreen: React.FC = () => {
 
     // Simulate network validation
     setTimeout(() => {
-      if (code.toUpperCase() === 'ALIKO70') {
+      if (code.toUpperCase() === 'ALLEN') {
         setTheme(fallbackTheme);
         navigate('/register');
       } else {
         setIsLoading(false);
-        setError('Invalid event code. Try ALIKO70');
+        setError('Invalid event code. Try ALLEN');
       }
     }, 1500);
   };
@@ -110,7 +110,7 @@ export const CodeEnterScreen: React.FC = () => {
           top: '150px',
           width: '300px',
           height: '300px',
-          background: 'radial-gradient(circle, rgba(37,99,235,0.05) 0%, rgba(255,255,255,0) 70%)',
+          background: `radial-gradient(circle, ${theme.primary_color}0d 0%, rgba(255,255,255,0) 70%)`,
           borderRadius: '50%',
           zIndex: 0
         }} />
@@ -152,7 +152,7 @@ export const CodeEnterScreen: React.FC = () => {
               onChange={(e) => setCode(e.target.value.toUpperCase())} 
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              placeholder="e.g. ALIKO70" 
+              placeholder="e.g. ALLEN" 
               style={{
                 width: '100%',
                 padding: '15px 20px',
@@ -171,7 +171,7 @@ export const CodeEnterScreen: React.FC = () => {
             />
 
             {error && (
-              <p className="animate-slide-up" style={{ color: '#e63946', fontSize: '14px', margin: '0 0 15px 0', fontWeight: 600 }}>
+              <p className="animate-slide-up" style={{ color: theme.secondary_color, fontSize: '14px', margin: '0 0 15px 0', fontWeight: 600 }}>
                 {error}
               </p>
             )}

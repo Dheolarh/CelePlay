@@ -247,7 +247,7 @@ export const Square15Game: React.FC<Square15GameProps> = ({
           @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
           @keyframes pulseRedText {
             0%, 100% { color: white; }
-            50% { color: #ef4444; }
+            50% { color: ${themeSecondaryColor}; }
           }
           .timer-danger {
             animation: pulseRedText 1s infinite;

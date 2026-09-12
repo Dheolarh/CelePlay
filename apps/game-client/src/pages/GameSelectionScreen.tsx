@@ -85,7 +85,7 @@ export const GameSelectionScreen: React.FC = () => {
 
         {/* Thick Red Arrow */}
         <div className="animate-slide-up delay-200" style={{ marginTop: '5px', marginBottom: '25px' }}>
-          <svg width="45" height="45" viewBox="0 0 24 24" fill="#e63946" xmlns="http://www.w3.org/2000/svg">
+          <svg width="45" height="45" viewBox="0 0 24 24" fill={theme.secondary_color} xmlns="http://www.w3.org/2000/svg">
             <path d="M12 21L20 12H15V3H9V12H4L12 21Z" />
           </svg>
         </div>

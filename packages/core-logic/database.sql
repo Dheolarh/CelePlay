@@ -4,7 +4,7 @@
 -- Stores the configuration and branding for each specific event/celebrant.
 CREATE TABLE themes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    code VARCHAR(50) UNIQUE NOT NULL, -- The unique code users enter (e.g., 'ALIKO70')
+    code VARCHAR(50) UNIQUE NOT NULL, -- The unique code users enter (e.g., 'ALLEN')
     name VARCHAR(255) NOT NULL,
     primary_color VARCHAR(7) DEFAULT '#000000',
     secondary_color VARCHAR(7) DEFAULT '#ffffff',
