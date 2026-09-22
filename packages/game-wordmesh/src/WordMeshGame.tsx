@@ -462,9 +462,11 @@ export const WordMeshGame: React.FC<WordMeshGameProps> = ({
           <div
             style={{
               display: 'grid',
-              // Four columns so long site names fit without wrapping.
-              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-              gap: '5px 10px',
+              // Two columns rather than four: at four, long site names such as
+              // "OSUN OSOGBO SACRED GROVE" were clipped by the ellipsis. Two
+              // wider columns let every name fit on one line.
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              gap: '6px 14px',
             }}
           >
             {placements.map((p) => {
@@ -479,9 +481,11 @@ export const WordMeshGame: React.FC<WordMeshGameProps> = ({
                     textDecoration: found ? 'line-through' : 'none',
                     textShadow: '0 2px 6px rgba(0,0,0,0.6)',
                     transition: 'color 0.2s ease',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
+                    // Wrap rather than clip. The ellipsis that used to be here
+                    // hid the end of longer names, which read as a bug because
+                    // the player could not tell what the word was.
+                    overflowWrap: 'anywhere',
+                    lineHeight: 1.25,
                   }}
                 >
                   {p.word}
