@@ -12,5 +12,21 @@ export default defineConfig({
       'react': path.resolve('./node_modules/react'),
       'react-dom': path.resolve('./node_modules/react-dom'),
     }
-  }
+  },
+  optimizeDeps: {
+    // Workspace packages are linked source (not pre-built), so let Vite read
+    // them directly. Without this, adding a new @celeplay package requires
+    // purging node_modules/.vite before it resolves.
+    exclude: [
+      '@celeplay/core-logic',
+      '@celeplay/shared-ui',
+      '@celeplay/game-duolock',
+      '@celeplay/game-flipizi',
+      '@celeplay/game-kalendily',
+      '@celeplay/game-layerz',
+      '@celeplay/game-square15',
+      '@celeplay/game-wordmesh',
+      '@celeplay/game-guexta',
+    ],
+  },
 })

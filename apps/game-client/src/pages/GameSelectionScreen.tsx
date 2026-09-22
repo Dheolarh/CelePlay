@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAudio } from '../context/AudioContext';
 
+// Seamless wavy horizontal lines pattern (light blue on white) used as the
+// page background. Inlined as a data URI so it needs no extra network request.
+const WAVE_PATTERN_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60' viewBox='0 0 120 60'%3E%3Cg fill='none' stroke='%23A8C8E8' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M0 15 C 20 5, 40 25, 60 15 S 100 5, 120 15'/%3E%3Cpath d='M0 30 C 20 20, 40 40, 60 30 S 100 20, 120 30'/%3E%3Cpath d='M0 45 C 20 35, 40 55, 60 45 S 100 35, 120 45'/%3E%3Cpath d='M0 0 C 20 -10, 40 10, 60 0 S 100 -10, 120 0'/%3E%3Cpath d='M0 60 C 20 50, 40 70, 60 60 S 100 50, 120 60'/%3E%3C/g%3E%3C/svg%3E")`;
+
 export const GameSelectionScreen: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -31,17 +35,19 @@ export const GameSelectionScreen: React.FC = () => {
 
   const games = [
     { id: 'duolock', name: 'DuoLock', logo: '/assets/static/duolock.webp', path: '/duolock', customHeight: '65px' },
-    { id: 'flipizi', name: 'Flipizi', logo: '/assets/static/flipizi.webp', path: '/flipizi', customHeight: '45px' },
-    { id: 'layerz', name: 'Layerz', logo: '/assets/static/layerz.webp', path: '/layerz', customHeight: '45px' },
     { id: 'square15', name: 'Square 15', logo: '/assets/static/square15.webp', path: '/square15', customHeight: '65px' },
-    { id: 'kalendily', name: 'Kalendilly', logo: '/assets/static/kalendily.webp', path: '/kalendily', customHeight: '65px' },
+    { id: 'wordmesh', name: 'WordMesh', logo: '/assets/dynamic/Wordmesh white logo.webp', path: '/wordmesh', customHeight: '65px', logoFilter: 'brightness(0)' },
+    { id: 'guexta', name: 'Guexta', logo: '/assets/dynamic/GUEXTA WHITE LOGO.webp', path: '/guexta', customHeight: '65px', logoFilter: 'brightness(0)' },
   ];
 
   return (
     <div style={{ 
       width: '100vw',
       height: '100dvh',
-      backgroundColor: '#ffffff', 
+      backgroundColor: '#ffffff',
+      backgroundImage: WAVE_PATTERN_BG,
+      backgroundSize: '120px 60px',
+      backgroundRepeat: 'repeat',
       display: 'flex', 
       justifyContent: 'center',
       alignItems: 'center',
@@ -59,16 +65,83 @@ export const GameSelectionScreen: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        paddingTop: '60px',
+        paddingTop: '110px',
         position: 'relative'
       }}>
+
+        {/* Top bar: register another player (left) and view the leaderboard
+            (right). Absolutely positioned so they sit at the top corners
+            without pushing the logo down, and sized for touch input. */}
+        <div style={{
+          position: 'absolute',
+          top: '14px',
+          left: '14px',
+          right: '14px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          zIndex: 20,
+        }}>
+          <button
+            onClick={() => navigate('/register')}
+            aria-label="Register another player"
+            title="Register another player"
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              border: `3px solid #000`,
+              backgroundColor: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              padding: 0,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+            }}
+          >
+            {/* Arrow pointing left, i.e. back to registration. */}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="#000" strokeWidth="3"
+              strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <button
+            onClick={() => navigate('/leaderboard')}
+            aria-label="View leaderboard"
+            title="View leaderboard"
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              border: `3px solid #000`,
+              backgroundColor: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              padding: 0,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+            }}
+          >
+            {/* Podium bars, reading as a ranking. */}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000">
+              <rect x="3" y="12" width="5" height="9" rx="1" />
+              <rect x="9.5" y="7" width="5" height="14" rx="1" />
+              <rect x="16" y="14" width="5" height="7" rx="1" />
+            </svg>
+          </button>
+        </div>
 
         {/* Top Logo */}
         <div className="animate-slide-up" style={{ marginBottom: '20px', width: '100%', display: 'flex', justifyContent: 'center' }}>
           <img 
             src="/assets/dynamic/gameselectlogo.webp" 
             alt="Event Logo" 
-            style={{ maxWidth: '280px', objectFit: 'contain' }}
+            style={{ maxWidth: '340px', width: '100%', objectFit: 'contain' }}
             onError={(e) => { e.currentTarget.src = theme.logo_url; }}
           />
         </div>
@@ -97,7 +170,7 @@ export const GameSelectionScreen: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '20px',
+          gap: '45px',
           paddingBottom: '80px',
           paddingTop: '10px'
         }}>
@@ -127,7 +200,8 @@ export const GameSelectionScreen: React.FC = () => {
                   maxWidth: '85%', 
                   height: 'auto',
                   maxHeight: game.customHeight,
-                  objectFit: 'contain' 
+                  objectFit: 'contain',
+                  filter: game.logoFilter
                 }} 
               />
             </div>

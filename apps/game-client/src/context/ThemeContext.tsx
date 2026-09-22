@@ -17,7 +17,7 @@ export interface Theme {
 // Fallback theme used before a theme is loaded from the backend.
 export const fallbackTheme: Theme = {
   id: 'fallback',
-  code: 'ALLEN',
+  code: 'UYOEVENT',
   name: '70th Great Aliko',
   primary_color: '#000001',
   secondary_color: '#686767',

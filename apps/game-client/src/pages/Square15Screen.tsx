@@ -2,6 +2,7 @@ import React from 'react';
 import { Square15Game } from '@celeplay/game-square15';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { submitGameScoreWithTimeout } from '../hooks/useScoreSubmit';
 
 export const Square15Screen: React.FC = () => {
   const navigate = useNavigate();
@@ -12,12 +13,15 @@ export const Square15Screen: React.FC = () => {
       themeBannerUrl="/assets/dynamic/kalendilybanner.webp" // Based on the user screenshot it might be standard birthday banner
       themePrimaryColor={theme.primary_color}
       themeSecondaryColor={theme.secondary_color}
-      onGameEnd={(score, maxScore, timeTaken) => {
+      onGameEnd={async (score, maxScore, timeTaken) => {
         console.log(`Square 15 ended! Score: ${score}/${maxScore}, Time: ${timeTaken}s`);
-        navigate('/leaderboard'); 
+
+        await submitGameScoreWithTimeout('square15', score);
+
+        navigate('/leaderboard', { replace: true }); 
       }}
       onExit={() => {
-        navigate('/games');
+        navigate('/games', { replace: true });
       }}
     />
   );

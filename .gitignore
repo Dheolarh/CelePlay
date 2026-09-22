@@ -121,3 +121,6 @@ dist-ssr/
 # Monorepo/Workspace specifics
 packages/*/dist/
 apps/*/dist/
+
+database.rules.json
+firebase.json

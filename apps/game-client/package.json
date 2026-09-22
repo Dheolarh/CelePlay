@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@celeplay/game-duolock": "*",
+    "@celeplay/game-flipizi": "*",
+    "@celeplay/game-guexta": "*",
     "@celeplay/game-kalendily": "*",
     "@celeplay/game-layerz": "*",
     "@celeplay/game-square15": "*",
-    "@celeplay/game-flipizi": "*",
+    "@celeplay/game-wordmesh": "*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.22.3"

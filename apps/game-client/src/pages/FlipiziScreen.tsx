@@ -14,10 +14,10 @@ export const FlipiziScreen: React.FC = () => {
       themeSecondaryColor={theme.secondary_color}
       onGameEnd={(score, maxScore, timeTaken) => {
         console.log(`Flipizi ended! Score: ${score}/${maxScore}, Time: ${timeTaken}s`);
-        navigate('/leaderboard'); 
+        navigate('/leaderboard', { replace: true }); 
       }}
       onExit={() => {
-        navigate('/games');
+        navigate('/games', { replace: true });
       }}
     />
   );

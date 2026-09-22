@@ -1,12 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { fetchLeaderboard, playerKeyFor, type LeaderboardEntry } from '@celeplay/core-logic';
+import { getStoredPhone } from '../hooks/useScoreSubmit';
+
+/** Turns a 1-based rank into the ordinal label the table displays. */
+const ordinal = (rank: number): string => {
+  const mod100 = rank % 100;
+  // 11th/12th/13th are the exceptions to the 1st/2nd/3rd pattern.
+  if (mod100 >= 11 && mod100 <= 13) return `${rank}th`;
+  switch (rank % 10) {
+    case 1: return `${rank}st`;
+    case 2: return `${rank}nd`;
+    case 3: return `${rank}rd`;
+    default: return `${rank}th`;
+  }
+};
 
 export const LeaderboardScreen: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
 
   const [scale, setScale] = useState(1);
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
   useEffect(() => {
     const updateScale = () => {
       const widthScale = window.innerWidth / 400;
@@ -18,26 +37,42 @@ export const LeaderboardScreen: React.FC = () => {
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-  // Mock leaderboard data
-  const leaderboardData = [
-    { pos: '1st', name: 'Usman Danjuma', score: 459 },
-    { pos: '2nd', name: 'Cynthia Victor', score: 400 },
-    { pos: '3rd', name: 'Tunde Smith', score: 380 },
-    { pos: '4th', name: 'Julius Dan', score: 375 },
-    { pos: '5th', name: 'Nkem Diri', score: 366 },
-    { pos: '6th', name: 'Panshak Alli', score: 350 },
-    { pos: '7th', name: 'Yusuf James', score: 333 },
-    { pos: '8th', name: 'Ola Brown', score: 325 },
-    { pos: '9th', name: 'Tamuno Toro', score: 318 },
-    { pos: '10th', name: 'Alex Efobi', score: 307 },
-    { pos: '33rd', name: 'Kunle Usman Obi', score: 285, isCurrentUser: true },
-  ];
+  useEffect(() => {
+    let cancelled = false;
 
-  const getMedal = (pos: string) => {
-    if (pos === '1st') return '🥇';
-    if (pos === '2nd') return '🥈';
-    if (pos === '3rd') return '🥉';
-    return <span style={{ fontSize: '10px' }}>{pos}</span>;
+    fetchLeaderboard(50)
+      .then((rows) => {
+        // Guard against setting state after unmount, which React warns about.
+        if (cancelled) return;
+        setEntries(rows);
+      })
+      .catch((err) => {
+        console.error('[leaderboard] load failed:', err);
+        if (!cancelled) setLoadError('Could not load scores.');
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Identify the current player by the phone number saved at registration.
+  const myKey = (() => {
+    const phone = getStoredPhone();
+    return phone ? playerKeyFor(phone) : null;
+  })();
+
+  const myRank = myKey ? entries.findIndex((e) => e.playerKey === myKey) + 1 : 0;
+  const myEntry = myRank > 0 ? entries[myRank - 1] : undefined;
+
+  const getMedal = (rank: number) => {
+    if (rank === 1) return '🥇';
+    if (rank === 2) return '🥈';
+    if (rank === 3) return '🥉';
+    return <span style={{ fontSize: '10px' }}>{ordinal(rank)}</span>;
   };
 
   return (
@@ -52,7 +87,7 @@ export const LeaderboardScreen: React.FC = () => {
       fontFamily: "'Outfit', sans-serif",
       position: 'relative'
     }}>
-      {/* Grayscale Background Layer */}
+      {/* Background Layer */}
       <div style={{
         position: 'absolute',
         top: 0,
@@ -62,7 +97,6 @@ export const LeaderboardScreen: React.FC = () => {
         backgroundImage: `url(${theme.stadium_bg_url})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        filter: 'grayscale(100%) brightness(0.4)',
         zIndex: 0
       }} />
 
@@ -110,7 +144,7 @@ export const LeaderboardScreen: React.FC = () => {
             background: transparent;
           }
           .custom-scrollbar-red::-webkit-scrollbar-thumb {
-            background: ${theme.secondary_color};
+            background: white;
             border-radius: 10px;
           }
         `}</style>
@@ -125,7 +159,7 @@ export const LeaderboardScreen: React.FC = () => {
           overflow: 'hidden'
         }}>
           {/* Header (Sticky, not scrollable) */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 20px', fontWeight: 800, borderBottom: `4px solid ${theme.primary_color}`, fontSize: '15px', color: 'white' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 20px', fontWeight: 800, borderBottom: '4px solid white', fontSize: '15px', color: 'white' }}>
             <span style={{ width: '25%', textAlign: 'center' }}>Position</span>
             <span style={{ width: '50%', textAlign: 'center' }}>Name</span>
             <span style={{ width: '25%', textAlign: 'center' }}>Score</span>
@@ -133,59 +167,81 @@ export const LeaderboardScreen: React.FC = () => {
           
           {/* Scrollable Rows */}
           <div className="custom-scrollbar-red" style={{ flex: 1, overflowY: 'auto' }}>
-            {leaderboardData.map((entry, index) => (
-              <div 
-                key={index} 
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  padding: '14px 20px', 
-                  borderBottom: `4px solid ${theme.primary_color}`,
-                  color: entry.isCurrentUser ? theme.secondary_color : 'white',
-                  fontWeight: 800,
-                  fontSize: '14px',
-                  backgroundColor: entry.isCurrentUser ? 'rgba(255,255,255,0.03)' : 'transparent'
-                }}
-              >
-                <span style={{ width: '25%', textAlign: 'center', fontSize: entry.pos.includes('st') || entry.pos.includes('nd') || entry.pos.includes('rd') && !entry.isCurrentUser ? '24px' : '14px' }}>
-                  {getMedal(entry.pos)}
-                </span>
-                <span style={{ width: '50%', textAlign: 'center' }}>{entry.name}</span>
-                <span style={{ width: '25%', textAlign: 'center' }}>{entry.score}</span>
+            {isLoading && (
+              <div style={{ color: 'white', textAlign: 'center', padding: '40px 20px', fontWeight: 600, opacity: 0.7 }}>
+                Loading scores…
               </div>
-            ))}
+            )}
+
+            {!isLoading && loadError && (
+              <div style={{ color: '#FFB300', textAlign: 'center', padding: '40px 20px', fontWeight: 700 }}>
+                {loadError}
+              </div>
+            )}
+
+            {!isLoading && !loadError && entries.length === 0 && (
+              <div style={{ color: 'white', textAlign: 'center', padding: '40px 20px', fontWeight: 600, opacity: 0.7 }}>
+                No scores yet. Play a game to get on the board!
+              </div>
+            )}
+
+            {!isLoading && entries.map((entry, index) => {
+              const rank = index + 1;
+              const isMe = myKey !== null && entry.playerKey === myKey;
+              return (
+                <div
+                  key={entry.playerKey}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '14px 20px',
+                    borderBottom: '4px solid white',
+                    color: isMe ? '#8AB4F8' : 'white',
+                    fontWeight: 800,
+                    fontSize: '14px',
+                    backgroundColor: isMe ? 'rgba(138,180,248,0.12)' : 'transparent'
+                  }}
+                >
+                  <span style={{ width: '25%', textAlign: 'center', fontSize: rank <= 3 ? '24px' : '14px' }}>
+                    {getMedal(rank)}
+                  </span>
+                  <span style={{ width: '50%', textAlign: 'center' }}>{entry.name}</span>
+                  <span style={{ width: '25%', textAlign: 'center' }}>{entry.total}</span>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Sticky Current Player Row */}
-          {leaderboardData.find(p => p.isCurrentUser) && (
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+          {/* Sticky row for the current player.
+              Only shown when they rank outside the fetched list, otherwise it
+              would duplicate the row already highlighted above. */}
+          {myEntry && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
-              padding: '14px 20px', 
-              borderTop: `4px solid ${theme.primary_color}`,
-              color: theme.secondary_color,
+              padding: '14px 20px',
+              borderTop: '4px solid white',
+              color: '#8AB4F8',
               fontWeight: 800,
               fontSize: '14px',
               zIndex: 20
             }}>
-              <span style={{ width: '25%', textAlign: 'center' }}>
-                {leaderboardData.find(p => p.isCurrentUser)?.pos}
-              </span>
-              <span style={{ width: '50%', textAlign: 'center' }}>{leaderboardData.find(p => p.isCurrentUser)?.name}</span>
-              <span style={{ width: '25%', textAlign: 'center' }}>{leaderboardData.find(p => p.isCurrentUser)?.score}</span>
+              <span style={{ width: '25%', textAlign: 'center' }}>{ordinal(myRank)}</span>
+              <span style={{ width: '50%', textAlign: 'center' }}>{myEntry.name}</span>
+              <span style={{ width: '25%', textAlign: 'center' }}>{myEntry.total}</span>
             </div>
           )}
         </div>
 
         {/* Exit Button */}
         <button 
-          onClick={() => navigate('/games')}
+          onClick={() => navigate('/games', { replace: true })}
           style={{
             marginTop: '35px',
             padding: '10px 45px',
-            backgroundColor: theme.secondary_color,
+            backgroundColor: '#E53935',
             color: 'white',
             border: '3px solid white',
             borderRadius: '35px',

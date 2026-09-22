@@ -304,7 +304,7 @@ export const Square15Game: React.FC<Square15GameProps> = ({
 
           {/* Right Score Box */}
           <div style={{
-            backgroundColor: themeSecondaryColor,
+            backgroundColor: '#E53935',
             width: '60px',
             height: '60px',
             display: 'flex',

@@ -24,7 +24,9 @@ export const SplashScreen: React.FC = () => {
   useEffect(() => {
     // Simulate loading for 2.5 seconds before going to code enter
     const timer = setTimeout(() => {
-      navigate('/code-enter');
+      // Replace rather than push: the splash is a loading screen, so Back
+      // should not return to it.
+      navigate('/code-enter', { replace: true });
     }, 2500);
     return () => clearTimeout(timer);
   }, [navigate]);

@@ -39,12 +39,12 @@ export const CodeEnterScreen: React.FC = () => {
 
     // Simulate network validation
     setTimeout(() => {
-      if (code.toUpperCase() === 'ALLEN') {
+      if (code.toUpperCase() === 'UYOEVENT') {
         setTheme(fallbackTheme);
         navigate('/register');
       } else {
         setIsLoading(false);
-        setError('Invalid event code. Try ALLEN');
+        setError('Invalid event code. Try UYOEVENT');
       }
     }, 1500);
   };
@@ -152,7 +152,7 @@ export const CodeEnterScreen: React.FC = () => {
               onChange={(e) => setCode(e.target.value.toUpperCase())} 
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              placeholder="e.g. ALLEN" 
+              placeholder="e.g. UYOEVENT" 
               style={{
                 width: '100%',
                 padding: '15px 20px',

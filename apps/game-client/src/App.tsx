@@ -12,15 +12,25 @@ import { KalendilyScreen } from './pages/KalendilyScreen';
 import { LayerzScreen } from './pages/LayerzScreen';
 import { Square15Screen } from './pages/Square15Screen';
 import { FlipiziScreen } from './pages/FlipiziScreen';
+import { WordMeshScreen } from './pages/WordMeshScreen';
+import { GuextaScreen } from './pages/GuextaScreen';
 import { LeaderboardScreen } from './pages/LeaderboardScreen';
+import { useImagePreload } from './hooks/useImagePreload';
 
 function App() {
+  // Kicks off image caching immediately on mount, in priority order. The work
+  // is scheduled off the critical path inside the hook, so it does not delay
+  // the first render.
+  useImagePreload();
+
   return (
     <ThemeProvider>
       <AudioProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Navigate to="/advert" />} />
+            {/* `replace` so the bare "/" is not left on the history stack as an
+                extra Back step before the first real screen. */}
+            <Route path="/" element={<Navigate to="/advert" replace />} />
             <Route path="/advert" element={<AdvertScreen />} />
             <Route path="/splash" element={<SplashScreen />} />
             <Route path="/code-enter" element={<CodeEnterScreen />} />
@@ -31,6 +41,8 @@ function App() {
             <Route path="/layerz" element={<LayerzScreen />} />
             <Route path="/square15" element={<Square15Screen />} />
             <Route path="/flipizi" element={<FlipiziScreen />} />
+            <Route path="/wordmesh" element={<WordMeshScreen />} />
+            <Route path="/guexta" element={<GuextaScreen />} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
           </Routes>
         </BrowserRouter>

@@ -28,10 +28,10 @@ export const LayerzScreen: React.FC = () => {
       onGameEnd={(score, maxScore, timeTaken) => {
         // Typically you'd send this to an API, then navigate to Leaderboard
         console.log(`Layerz ended! Score: ${score}/${maxScore}, Time: ${timeTaken}s`);
-        navigate('/leaderboard'); // Or leaderboard
+        navigate('/leaderboard', { replace: true });
       }}
       onExit={() => {
-        navigate('/games');
+        navigate('/games', { replace: true });
       }}
     />
   );

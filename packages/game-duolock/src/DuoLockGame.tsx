@@ -6,16 +6,20 @@ export interface DuoLockGameProps {
   themeBannerUrl: string;
   themePrimaryColor: string;
   themeSecondaryColor: string;
+  cardBackUrl?: string;
   onGameEnd: (score: number, timeTaken: number) => void;
   onExit: () => void;
   cardPairs: { id: string; imageA: string; imageB: string }[];
 }
 
+// Default artwork for the face-down card tiles. Overridable via `cardBackUrl`.
+const DEFAULT_CARD_BACK = '/assets/dynamic/lifeline.webp';
+
 export const DuoLockGame: React.FC<DuoLockGameProps> = ({
-  themeLogoUrl,
   themeBannerUrl,
   themePrimaryColor,
   themeSecondaryColor,
+  cardBackUrl = DEFAULT_CARD_BACK,
   onGameEnd,
   onExit,
   cardPairs
@@ -77,7 +81,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
       fontFamily: "'Outfit', sans-serif",
       position: 'relative'
     }}>
-      {/* Grayscale Background Layer */}
+      {/* Background Layer */}
       <div style={{
         position: 'absolute',
         top: 0,
@@ -87,7 +91,6 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
         backgroundImage: `url('/assets/dynamic/gameBackground.webp')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        filter: 'grayscale(100%)',
         zIndex: 0
       }} />
 
@@ -122,7 +125,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
           <img 
             src={themeBannerUrl} 
             alt="Banner" 
-            style={{ width: '100%', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', display: 'block' }} 
+            style={{ width: '100%', borderRadius: '10px', display: 'block' }} 
           />
           
           {/* Overlay Timer and Score */}
@@ -157,7 +160,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
             </div>
             
             <div style={{ 
-              backgroundColor: themeSecondaryColor, 
+              backgroundColor: '#E53935', 
               color: 'white', 
               padding: '4px 16px', 
               borderRadius: '8px', 
@@ -206,8 +209,8 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
                 backfaceVisibility: 'hidden',
                 backgroundColor: themePrimaryColor,
                 borderRadius: '8px',
-                backgroundImage: `url(${themeLogoUrl})`,
-                backgroundSize: '60%',
+                backgroundImage: `url("${cardBackUrl}")`,
+                backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
               }} />
@@ -238,7 +241,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
           onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <img src="/assets/static/duolock.webp" alt="DuoLock" style={{ width: '140px', filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.5))' }} />
+          <img src="/assets/dynamic/duolock.webp" alt="DuoLock" style={{ width: '140px', filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.5))' }} />
         </div>
 
       </div>
@@ -251,7 +254,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
           left: 0,
           width: '100vw',
           height: '100dvh',
-          backgroundColor: isWon ? themePrimaryColor : themeSecondaryColor,
+          backgroundColor: isWon ? '#1A3A6B' : '#E53935',
           zIndex: 9999,
           display: 'flex',
           flexDirection: 'column',
@@ -272,7 +275,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
             onClick={() => onGameEnd(score, 60 - timeLeft)}
             style={{
               backgroundColor: 'white',
-              color: isWon ? themePrimaryColor : themeSecondaryColor,
+              color: isWon ? '#1A3A6B' : '#E53935',
               border: 'none',
               padding: '15px 40px',
               borderRadius: '30px',

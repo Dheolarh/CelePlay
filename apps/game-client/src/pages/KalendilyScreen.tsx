@@ -118,7 +118,7 @@ export const KalendilyScreen: React.FC = () => {
 
   const handleGameEnd = (score: number, maxScore: number, timeTaken: number) => {
     console.log(`Kalendily Ended! Score: ${score}/${maxScore}, Time: ${timeTaken}s`);
-    navigate('/leaderboard');
+    navigate('/leaderboard', { replace: true });
   };
 
   return (
@@ -129,7 +129,7 @@ export const KalendilyScreen: React.FC = () => {
       themeSecondaryColor={theme.secondary_color}
       questions={kalendilyQuestions}
       onGameEnd={handleGameEnd}
-      onExit={() => navigate('/games')}
+      onExit={() => navigate('/games', { replace: true })}
     />
   );
 };
