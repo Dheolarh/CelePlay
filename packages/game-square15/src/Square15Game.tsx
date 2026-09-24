@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useSquare15Store } from './store';
+import { useSquare15Store, GAME_DURATION, MAX_SCORE } from './store';
+import { HowToPlayOverlay } from '@celeplay/shared-ui';
 
 export interface Square15GameProps {
   themeBannerUrl: string;
@@ -7,13 +8,16 @@ export interface Square15GameProps {
   themeSecondaryColor: string;
   onGameEnd: (score: number, maxScore: number, timeTaken: number) => void;
   onExit: () => void;
+  /** Optional how-to-play card shown before the clock starts. */
+  howToPlayImageUrl?: string;
 }
 
 export const Square15Game: React.FC<Square15GameProps> = ({
   themeBannerUrl,
   themePrimaryColor,
   themeSecondaryColor,
-  onGameEnd
+  onGameEnd,
+  howToPlayImageUrl,
 }) => {
   const {
     grid,
@@ -23,11 +27,18 @@ export const Square15Game: React.FC<Square15GameProps> = ({
     score,
     isWon,
     initializeGame,
+    startGame,
     movePiece,
     setPeeking,
     tickTimer,
     resetGame
   } = useSquare15Store();
+
+  /**
+   * True while the instructions are on screen. The store holds the clock until
+   * this clears, so the 3 minutes only begin once the player starts playing.
+   */
+  const [isShowingHowToPlay, setIsShowingHowToPlay] = useState(Boolean(howToPlayImageUrl));
 
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -470,7 +481,7 @@ export const Square15Game: React.FC<Square15GameProps> = ({
           </h2>
           
           <button 
-            onClick={() => onGameEnd(score, 150, 180 - timeLeft)}
+            onClick={() => onGameEnd(score, MAX_SCORE, GAME_DURATION - timeLeft)}
             style={{
               backgroundColor: 'white',
               color: isWon ? themePrimaryColor : themeSecondaryColor,
@@ -488,6 +499,20 @@ export const Square15Game: React.FC<Square15GameProps> = ({
             VIEW LEADERBOARD
           </button>
         </div>
+      )}
+
+      {/* Instructions, shown before play. The puzzle is generated but the clock
+          is held; dismissing this starts it. */}
+      {howToPlayImageUrl && isShowingHowToPlay && (
+        <HowToPlayOverlay
+          imageUrl={howToPlayImageUrl}
+          gameName="Square 15"
+          accentColor={themeSecondaryColor}
+          onClose={() => {
+            setIsShowingHowToPlay(false);
+            startGame();
+          }}
+        />
       )}
 
     </div>

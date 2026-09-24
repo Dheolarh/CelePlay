@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGuextaStore, GAME_DURATION } from './store';
 import { layoutRows } from './attractions';
+import { HowToPlayOverlay } from '@celeplay/shared-ui';
 
 export interface GuextaGameProps {
   themeBannerUrl: string;
@@ -8,6 +9,8 @@ export interface GuextaGameProps {
   themeSecondaryColor: string;
   onGameEnd: (score: number, solved: number, timeTaken: number) => void;
   onExit: () => void;
+  /** Optional how-to-play card shown before the round begins. */
+  howToPlayImageUrl?: string;
 }
 
 const ACCENT_RED = '#E53935';
@@ -137,6 +140,7 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
   themeBannerUrl,
   onGameEnd,
   onExit,
+  howToPlayImageUrl,
 }) => {
   const {
     current,
@@ -147,11 +151,14 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
     timeLeft,
     isPlaying,
     isGameEnded,
+    timeUp,
     justSolved,
     initializeGame,
+    startGame,
     placeTile,
     returnTile,
     tickTimer,
+    finishGame,
     clearProgress,
   } = useGuextaStore();
 
@@ -178,10 +185,14 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
   const contentWidth = Math.min(viewport.width, CONTENT_WIDTH);
   const scale = Math.min(viewport.width / CONTENT_WIDTH, viewport.height / BASE_HEIGHT);
 
-  // Start a round on mount, and self-heal if a cleanup stopped the game.
+  // Build a round on mount if one is missing, or replace a finished one.
+  //
+  // This must NOT react to `!isPlaying`: a new round is deliberately paused
+  // while the how-to-play popup is open, so treating "not playing" as "needs
+  // init" would rebuild the round in a loop.
   useEffect(() => {
     const state = useGuextaStore.getState();
-    if (!state.current || state.slots.length === 0 || !state.isPlaying) {
+    if (!state.current || state.slots.length === 0 || state.isGameEnded) {
       initializeGame();
     }
   }, [initializeGame]);
@@ -204,8 +215,48 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
     }
   }, [timeLeft, isPlaying]);
 
+  /**
+   * True once the player has locked in the whole answer.
+   *
+   * When the clock runs out there are two different situations: the player had
+   * just finished the word (the answer is fully placed and correct), or they ran
+   * out of time still stuck on it. Only the second one needs the answer revealed.
+   */
+  const isCurrentSolved = Boolean(
+    current &&
+      slots.length === current.letters.length &&
+      slots.every((s, i) => s?.char === current.letters[i])
+  );
+
+  // Hold the end screen for a beat so the answer can be shown. The store sets
+  // `timeUp` when the clock hits zero but leaves `isGameEnded` false until
+  // finishGame() runs, which is what gives this delay somewhere to happen.
+  const REVEAL_DELAY_MS = 3000;
+
+  useEffect(() => {
+    if (!timeUp) return;
+
+    // Solved on the buzzer, or nothing to reveal: no reason to linger.
+    if (isCurrentSolved) {
+      finishGame();
+      return;
+    }
+
+    const timer = setTimeout(() => finishGame(), REVEAL_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [timeUp, isCurrentSolved, finishGame]);
+
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [showHint, setShowHint] = useState(false);
+
+  /**
+   * True while the instructions are on screen.
+   *
+   * Starts true when a card is supplied, so a fresh round is paused until the
+   * player dismisses it. Resets to true whenever a new round begins, so the
+   * rules are shown again after a replay rather than only on first load.
+   */
+  const [isShowingHowToPlay, setIsShowingHowToPlay] = useState(Boolean(howToPlayImageUrl));
 
   // Hide the hint popup whenever the target attraction changes, so a solved word
   // never leaves a stale clue on screen for the next one.
@@ -754,6 +805,102 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
         </div>
       )}
 
+      {/* Answer reveal, shown for a beat when time runs out on an unsolved
+          attraction. Sits above the board but below the result overlay, so the
+          switch to "TIME UP!" reads as the next screen rather than a cut. */}
+      {timeUp && !isGameEnded && current && !isCurrentSolved && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100dvh',
+            backgroundColor: 'rgba(0,0,0,0.82)',
+            zIndex: 9998,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            boxSizing: 'border-box',
+            textAlign: 'center',
+            fontFamily: "'Outfit', sans-serif",
+          }}
+        >
+          <p style={{
+            color: 'rgba(255,255,255,0.75)',
+            fontSize: '15px',
+            fontWeight: 700,
+            letterSpacing: '3px',
+            margin: '0 0 18px',
+          }}>
+            THE ANSWER WAS
+          </p>
+
+          <div
+            className="animate-slide-up"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              // Letters and word gaps both flow in one wrapped row.
+              gap: '10px',
+              rowGap: '18px',
+              maxWidth: '420px',
+            }}
+          >
+            {current.name.split('').map((ch, i) => {
+              if (ch === ' ') {
+                return (
+                  <span
+                    key={`gap-${i}`}
+                    // A spacer sized to one tile, so wide answers break cleanly.
+                    style={{ width: `${SLOT_SIZE}px`, height: `${SLOT_SIZE}px` }}
+                  />
+                );
+              }
+
+              return (
+                <span
+                  key={`reveal-${i}`}
+                  style={{
+                    width: `${SLOT_SIZE}px`,
+                    height: `${SLOT_SIZE}px`,
+                    flexShrink: 0,
+                    borderRadius: '10px',
+                    backgroundColor: TILE_FACE,
+                    border: `2px solid ${TILE_EDGE}`,
+                    color: TILE_TEXT,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    fontWeight: 800,
+                    fontSize: '24px',
+                    // The 0-offset slab underneath is what gives the tile its
+                    // scrabble depth, matching every other tile in the game.
+                    boxShadow: `0 3px 0 ${TILE_EDGE}, 0 5px 10px rgba(0,0,0,0.3)`,
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  {ch}
+                </span>
+              );
+            })}
+          </div>
+
+          <p style={{
+            color: 'white',
+            fontSize: '20px',
+            fontWeight: 800,
+            marginTop: '26px',
+            marginBottom: 0,
+          }}>
+            {current.name}
+          </p>
+        </div>
+      )}
+
       {/* Result Overlay */}
       {isGameEnded && (
         <div
@@ -802,6 +949,20 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
             VIEW LEADERBOARD
           </button>
         </div>
+      )}
+
+      {/* Instructions, shown before play. The round is already built but paused;
+          dismissing this is what starts the clock. */}
+      {howToPlayImageUrl && isShowingHowToPlay && (
+        <HowToPlayOverlay
+          imageUrl={howToPlayImageUrl}
+          gameName="Guexta"
+          accentColor={ACCENT_RED}
+          onClose={() => {
+            setIsShowingHowToPlay(false);
+            startGame();
+          }}
+        />
       )}
     </div>
   );

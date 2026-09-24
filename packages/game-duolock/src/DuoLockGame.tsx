@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useDuoLockStore } from './store';
+import { useDuoLockStore, DUOLOCK_DURATION } from './store';
+import { HowToPlayOverlay } from '@celeplay/shared-ui';
 
 export interface DuoLockGameProps {
   themeLogoUrl: string;
@@ -10,6 +11,8 @@ export interface DuoLockGameProps {
   onGameEnd: (score: number, timeTaken: number) => void;
   onExit: () => void;
   cardPairs: { id: string; imageA: string; imageB: string }[];
+  /** Optional how-to-play card shown before the preview begins. */
+  howToPlayImageUrl?: string;
 }
 
 // Default artwork for the face-down card tiles. Overridable via `cardBackUrl`.
@@ -22,9 +25,17 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
   cardBackUrl = DEFAULT_CARD_BACK,
   onGameEnd,
   onExit,
-  cardPairs
+  cardPairs,
+  howToPlayImageUrl,
 }) => {
-  const { cards, score, timeLeft, previewTimeLeft, isPlaying, isPreviewing, isGameEnded, isWon, initializeGame, flipCard, tickTimer, resetGame } = useDuoLockStore();
+  const { cards, score, timeLeft, previewTimeLeft, isPlaying, isPreviewing, isGameEnded, isWon, initializeGame, startGame, flipCard, tickTimer, resetGame } = useDuoLockStore();
+
+  /**
+   * True while the instructions are on screen. The store holds the preview
+   * countdown until this clears, so the deck stays face-up and untimed while the
+   * player reads.
+   */
+  const [isShowingHowToPlay, setIsShowingHowToPlay] = useState(Boolean(howToPlayImageUrl));
 
   const [scale, setScale] = useState(1);
   useEffect(() => {
@@ -272,7 +283,7 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
           </h2>
           
           <button 
-            onClick={() => onGameEnd(score, 60 - timeLeft)}
+            onClick={() => onGameEnd(score, DUOLOCK_DURATION - timeLeft)}
             style={{
               backgroundColor: 'white',
               color: isWon ? '#1A3A6B' : '#E53935',
@@ -291,6 +302,20 @@ export const DuoLockGame: React.FC<DuoLockGameProps> = ({
             VIEW LEADERBOARD
           </button>
         </div>
+      )}
+
+      {/* Instructions, shown before the preview. Dismissing this releases the
+          hold on the preview countdown, which then runs as normal. */}
+      {howToPlayImageUrl && isShowingHowToPlay && (
+        <HowToPlayOverlay
+          imageUrl={howToPlayImageUrl}
+          gameName="DuoLock"
+          accentColor={themeSecondaryColor}
+          onClose={() => {
+            setIsShowingHowToPlay(false);
+            startGame();
+          }}
+        />
       )}
 
     </div>

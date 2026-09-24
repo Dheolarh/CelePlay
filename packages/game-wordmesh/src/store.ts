@@ -8,7 +8,8 @@ import {
 } from './puzzles';
 
 const WORDS_TO_FIND = 8;
-const GAME_DURATION = 60;
+// One minute 30 seconds, matching the how-to-play card for this game.
+const GAME_DURATION = 90;
 const POINTS_PER_WORD = 10;
 // Pause after the final word so the player sees their last find highlighted
 // before the win panel appears.
@@ -33,6 +34,8 @@ interface WordMeshState {
   /** Cells of the most recently found word, for highlight animation. */
   lastFoundCells: string[];
   initializeGame: (gridSize?: number) => void;
+  /** Starts the clock. Called once the instructions popup is closed. */
+  startGame: () => void;
   startSelection: (cell: string) => void;
   previewSelection: (cell: string) => void;
   commitSelection: () => void;
@@ -68,6 +71,13 @@ export const useWordMeshStore = create<WordMeshState>((set, get) => ({
   lastFoundWord: null,
   lastFoundCells: [],
 
+  /**
+   * Builds a puzzle and leaves it PAUSED.
+   *
+   * isPlaying stays false until startGame() runs, which happens when the player
+   * closes the how-to-play popup. Without this the clock would run
+   * down while they were still reading the rules.
+   */
   initializeGame: (gridSize = DEFAULT_GRID_SIZE) => {
     const puzzle = generatePuzzle(WORDS_TO_FIND, gridSize);
     set({
@@ -79,13 +89,16 @@ export const useWordMeshStore = create<WordMeshState>((set, get) => ({
       anchorCell: null,
       score: 0,
       timeLeft: GAME_DURATION,
-      isPlaying: true,
+      isPlaying: false,
       isGameEnded: false,
       isWon: false,
       lastFoundWord: null,
       lastFoundCells: [],
     });
   },
+
+  /** Starts the clock. Called once the instructions popup is closed. */
+  startGame: () => set({ isPlaying: true }),
 
   startSelection: (cell) => {
     const { isPlaying, isGameEnded } = get();

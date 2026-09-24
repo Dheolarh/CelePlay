@@ -2,7 +2,7 @@ import React from 'react';
 import { WordMeshGame } from '@celeplay/game-wordmesh';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { submitGameScoreWithTimeout } from '../hooks/useScoreSubmit';
+import { submitGameScoreInBackground } from '../hooks/useScoreSubmit';
 
 export const WordMeshScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -14,12 +14,12 @@ export const WordMeshScreen: React.FC = () => {
       themeBannerUrl={theme.header_banner_url}
       themePrimaryColor={theme.primary_color}
       themeSecondaryColor={theme.secondary_color}
-      onGameEnd={async (score, timeTaken) => {
+      howToPlayImageUrl="/assets/static/How to Play - Wordmesh.webp"
+      onGameEnd={(score, timeTaken) => {
         console.log(`WordMesh ended! Score: ${score}, Time: ${timeTaken}s`);
 
-        // Wait for the write before navigating. The leaderboard fetches on
-        // mount, so leaving first would show a stale board without this score.
-        await submitGameScoreWithTimeout('wordmesh', score);
+        // Start the write, then leave immediately.
+        submitGameScoreInBackground('wordmesh', score);
 
         navigate('/leaderboard', { replace: true });
       }}

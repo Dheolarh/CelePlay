@@ -27,13 +27,17 @@ export const PREFETCH_TIERS: string[][] = [
     `${DYNAMIC}/regLogo.webp`,
     `${DYNAMIC}/banner.webp`,
   ],
-  // 2. Game select
+  // 2. Game select, including the how-to-play cards shown on tapping a game
   [
     `${DYNAMIC}/gameselectlogo.webp`,
     `${STATIC}/duolock.webp`,
     `${STATIC}/square15.webp`,
     `${DYNAMIC}/Wordmesh white logo.webp`,
     `${DYNAMIC}/GUEXTA WHITE LOGO.webp`,
+    `${STATIC}/How to Play - DuoLock.webp`,
+    `${STATIC}/How to Play - Square15.webp`,
+    `${STATIC}/How to Play - Wordmesh.webp`,
+    `${STATIC}/How to Play - Guexta.webp`,
   ],
   // 3. Games (shared chrome)
   [
@@ -46,9 +50,10 @@ export const PREFETCH_TIERS: string[][] = [
     `${STATIC}/layerz.webp`,
     `${STATIC}/flipizi.webp`,
   ],
-  // 4. Leaderboard
+  // 4. Leaderboard, including the promotional flier that appears over it
   [
     `${DYNAMIC}/leaderboard ribbon.webp`,
+    `${STATIC}/Call to action Flier.webp`,
   ],
   // 5. Splash
   [

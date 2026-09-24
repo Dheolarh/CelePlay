@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DuoLockGame } from '@celeplay/game-duolock';
 import { useTheme } from '../context/ThemeContext';
 import { useAudio } from '../context/AudioContext';
-import { submitGameScoreWithTimeout } from '../hooks/useScoreSubmit';
+import { submitGameScoreInBackground } from '../hooks/useScoreSubmit';
 
 export const DuoLockScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -26,10 +26,11 @@ export const DuoLockScreen: React.FC = () => {
     { id: '8', imageA: '/assets/dynamic/8a.webp', imageB: '/assets/dynamic/8b.webp' },
   ];
 
-  const handleGameEnd = async (score: number, timeTaken: number) => {
+  const handleGameEnd = (score: number, timeTaken: number) => {
     console.log(`Game Ended! Score: ${score}, Time: ${timeTaken}s`);
 
-    await submitGameScoreWithTimeout('duolock', score);
+    // Start the write, then leave immediately.
+    submitGameScoreInBackground('duolock', score);
 
     navigate('/leaderboard', { replace: true });
   };
@@ -40,6 +41,7 @@ export const DuoLockScreen: React.FC = () => {
       themeBannerUrl={theme.header_banner_url}
       themePrimaryColor={theme.primary_color}
       themeSecondaryColor={theme.secondary_color}
+      howToPlayImageUrl="/assets/static/How to Play - DuoLock.webp"
       onGameEnd={handleGameEnd}
       onExit={() => navigate('/games', { replace: true })}
       cardPairs={cardPairs}

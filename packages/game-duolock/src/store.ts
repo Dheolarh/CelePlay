@@ -8,6 +8,9 @@ export interface Card {
   isMatched: boolean;
 }
 
+/** One minute of play, after the initial preview. Matches the how-to-play card. */
+export const DUOLOCK_DURATION = 60;
+
 interface DuoLockState {
   cards: Card[];
   flippedIndices: number[];
@@ -16,9 +19,25 @@ interface DuoLockState {
   previewTimeLeft: number;
   isPlaying: boolean;
   isPreviewing: boolean;
+  /**
+   * True while the how-to-play card is on screen.
+   *
+   * DuoLock opens with a 10-second face-up preview of the deck. That preview is
+   * held until the player dismisses the instructions, otherwise it would run
+   * down while they were still reading and the cards would be hidden before they
+   * looked at them.
+   */
+  isAwaitingStart: boolean;
   isGameEnded: boolean;
   isWon: boolean;
   initializeGame: (pairs: { id: string, imageA: string, imageB: string }[]) => void;
+  /**
+   * Releases the hold placed on the preview.
+   *
+   * Called when the instructions are dismissed, which is what allows the
+   * preview countdown to begin.
+   */
+  startGame: () => void;
   flipCard: (index: number) => void;
   tickTimer: () => void;
   resetGame: () => void;
@@ -42,6 +61,7 @@ export const useDuoLockStore = create<DuoLockState>((set, get) => ({
   previewTimeLeft: 10,
   isPlaying: false,
   isPreviewing: false,
+  isAwaitingStart: false,
   isGameEnded: false,
   isWon: false,
 
@@ -64,10 +84,14 @@ export const useDuoLockStore = create<DuoLockState>((set, get) => ({
       previewTimeLeft: 10,
       isPlaying: false,
       isPreviewing: true,
+      // Hold the preview until startGame() is called.
+      isAwaitingStart: true,
       isGameEnded: false,
       isWon: false
     });
   },
+
+  startGame: () => set({ isAwaitingStart: false }),
 
   flipCard: (index) => {
     const { cards, flippedIndices, isPlaying, isPreviewing, isGameEnded } = get();
@@ -117,8 +141,12 @@ export const useDuoLockStore = create<DuoLockState>((set, get) => ({
   },
 
   tickTimer: () => {
-    const { timeLeft, previewTimeLeft, isPlaying, isPreviewing } = get();
-    
+    const { timeLeft, previewTimeLeft, isPlaying, isPreviewing, isAwaitingStart } = get();
+
+    // The clock is frozen until the instructions are dismissed, so the preview
+    // does not tick away while the player is still reading.
+    if (isAwaitingStart) return;
+
     if (isPreviewing && previewTimeLeft > 0) {
       set({ previewTimeLeft: previewTimeLeft - 1 });
       if (previewTimeLeft - 1 === 0) {
@@ -147,6 +175,7 @@ export const useDuoLockStore = create<DuoLockState>((set, get) => ({
       previewTimeLeft: 10,
       isPlaying: false,
       isPreviewing: false,
+      isAwaitingStart: false,
       isGameEnded: false,
       isWon: false
     });

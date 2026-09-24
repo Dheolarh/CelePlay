@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAudio } from '../context/AudioContext';
+import { fetchPlayedGames, type GameId } from '@celeplay/core-logic';
+import { getStoredPhone } from '../hooks/useScoreSubmit';
 
 // Seamless wavy horizontal lines pattern (light blue on white) used as the
 // page background. Inlined as a data URI so it needs no extra network request.
@@ -15,6 +17,37 @@ export const GameSelectionScreen: React.FC = () => {
   useEffect(() => {
     setBgMusicVolume(0.5);
   }, [setBgMusicVolume]);
+
+  /**
+   * Games the signed-in player has already finished.
+   *
+   * Read from the `played` node, which the database only ever lets be written
+   * once per game. A failed read leaves the list empty, so an unreachable
+   * database degrades to "everything is playable" rather than locking the
+   * player out of the whole event.
+   */
+  const [playedGames, setPlayedGames] = useState<GameId[]>([]);
+
+  useEffect(() => {
+    const phone = getStoredPhone();
+    if (!phone) return;
+
+    let cancelled = false;
+    fetchPlayedGames(phone)
+      .then((games) => {
+        if (!cancelled) setPlayedGames(games);
+      })
+      .catch((err) => {
+        console.error('[games] could not load played games:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Every game finished means the event is done for this player.
+  const allGamesPlayed = playedGames.length > 0 && playedGames.length === 4;
 
   // Proportional Scaling Logic
   const [scale, setScale] = useState(1);
@@ -153,15 +186,40 @@ export const GameSelectionScreen: React.FC = () => {
           margin: 0,
           letterSpacing: '-0.5px'
         }}>
-          PICK A GAME
+          {allGamesPlayed ? 'ALL GAMES PLAYED' : 'PICK A GAME'}
         </h2>
 
-        {/* Thick Red Arrow */}
-        <div className="animate-slide-up delay-200" style={{ marginTop: '5px', marginBottom: '25px' }}>
-          <svg width="45" height="45" viewBox="0 0 24 24" fill={theme.secondary_color} xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 21L20 12H15V3H9V12H4L12 21Z" />
-          </svg>
-        </div>
+        {/* Once every game is done there is nothing left to pick, so the prompt
+            is replaced with the only action still worth taking. */}
+        {allGamesPlayed ? (
+          <button
+            className="animate-slide-up delay-200"
+            onClick={() => navigate('/leaderboard')}
+            style={{
+              marginTop: '12px',
+              padding: '10px 30px',
+              backgroundColor: '#E53935',
+              color: 'white',
+              border: '3px solid #111',
+              borderRadius: '35px',
+              fontWeight: 900,
+              fontSize: '18px',
+              letterSpacing: '1px',
+              cursor: 'pointer',
+              fontFamily: "'Outfit', sans-serif",
+              boxShadow: '0 6px 16px rgba(0,0,0,0.3)',
+            }}
+          >
+            VIEW LEADERBOARD
+          </button>
+        ) : (
+          /* Thick Red Arrow */
+          <div className="animate-slide-up delay-200" style={{ marginTop: '5px', marginBottom: '25px' }}>
+            <svg width="45" height="45" viewBox="0 0 24 24" fill={theme.secondary_color} xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 21L20 12H15V3H9V12H4L12 21Z" />
+            </svg>
+          </div>
+        )}
 
         {/* Static Game List */}
         <div className="animate-slide-up delay-300" style={{
@@ -174,38 +232,68 @@ export const GameSelectionScreen: React.FC = () => {
           paddingBottom: '80px',
           paddingTop: '10px'
         }}>
-          {games.map((game) => (
-            <div 
-              key={game.id}
-              onClick={() => game.path !== '#' && navigate(game.path)}
-              style={{
-                width: '80%',
-                display: 'flex',
-                justifyContent: 'center',
-                cursor: game.path !== '#' ? 'pointer' : 'default',
-                transition: 'transform 0.2s ease',
-                opacity: game.path !== '#' ? 1 : 0.8
-              }}
-              onMouseEnter={(e) => {
-                if (game.path !== '#') e.currentTarget.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                if (game.path !== '#') e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              <img 
-                src={game.logo} 
-                alt={game.name} 
-                style={{ 
-                  maxWidth: '85%', 
-                  height: 'auto',
-                  maxHeight: game.customHeight,
-                  objectFit: 'contain',
-                  filter: game.logoFilter
-                }} 
-              />
-            </div>
-          ))}
+          {games.map((game) => {
+            const isPlayed = playedGames.includes(game.id as GameId);
+            const isEnabled = game.path !== '#' && !isPlayed;
+
+            return (
+              <div 
+                key={game.id}
+                onClick={() => isEnabled && navigate(game.path)}
+                aria-disabled={!isEnabled}
+                style={{
+                  width: '80%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: isEnabled ? 'pointer' : 'default',
+                  transition: 'transform 0.2s ease',
+                  opacity: isEnabled ? 1 : 0.45,
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  if (isEnabled) e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  if (isEnabled) e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <img 
+                  src={game.logo} 
+                  alt={game.name} 
+                  style={{ 
+                    maxWidth: '85%', 
+                    height: 'auto',
+                    maxHeight: game.customHeight,
+                    objectFit: 'contain',
+                    filter: game.logoFilter
+                  }} 
+                />
+
+                {/* Sits over the logo once the game has been finished, so the
+                    tile reads as unavailable without the logo vanishing. */}
+                {isPlayed && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '50%',
+                    transform: 'translateY(-50%) rotate(-8deg)',
+                    backgroundColor: '#111',
+                    color: 'white',
+                    fontWeight: 900,
+                    fontSize: '13px',
+                    letterSpacing: '2px',
+                    padding: '5px 14px',
+                    borderRadius: '20px',
+                    border: '2px solid white',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.35)',
+                    pointerEvents: 'none',
+                  }}>
+                    PLAYED
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
         
       </div>

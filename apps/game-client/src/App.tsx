@@ -15,6 +15,7 @@ import { FlipiziScreen } from './pages/FlipiziScreen';
 import { WordMeshScreen } from './pages/WordMeshScreen';
 import { GuextaScreen } from './pages/GuextaScreen';
 import { LeaderboardScreen } from './pages/LeaderboardScreen';
+import { RequireUnplayedGame } from './components/RequireUnplayedGame';
 import { useImagePreload } from './hooks/useImagePreload';
 
 function App() {
@@ -36,13 +37,16 @@ function App() {
             <Route path="/code-enter" element={<CodeEnterScreen />} />
             <Route path="/register" element={<RegistrationScreen />} />
             <Route path="/games" element={<GameSelectionScreen />} />
-            <Route path="/duolock" element={<DuoLockScreen />} />
+            {/* Only the four games with a tile are guarded. Kalendily, Layerz
+                and Flipizi have routes but no tile, so nobody can reach them
+                and they have no score to protect. */}
+            <Route path="/duolock" element={<RequireUnplayedGame game="duolock"><DuoLockScreen /></RequireUnplayedGame>} />
             <Route path="/kalendily" element={<KalendilyScreen />} />
             <Route path="/layerz" element={<LayerzScreen />} />
-            <Route path="/square15" element={<Square15Screen />} />
+            <Route path="/square15" element={<RequireUnplayedGame game="square15"><Square15Screen /></RequireUnplayedGame>} />
             <Route path="/flipizi" element={<FlipiziScreen />} />
-            <Route path="/wordmesh" element={<WordMeshScreen />} />
-            <Route path="/guexta" element={<GuextaScreen />} />
+            <Route path="/wordmesh" element={<RequireUnplayedGame game="wordmesh"><WordMeshScreen /></RequireUnplayedGame>} />
+            <Route path="/guexta" element={<RequireUnplayedGame game="guexta"><GuextaScreen /></RequireUnplayedGame>} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
           </Routes>
         </BrowserRouter>

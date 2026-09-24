@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { ATTRACTIONS, type Attraction } from './attractions';
 
-const GAME_DURATION = 60;
+// Two minutes, matching the how-to-play card for this game.
+const GAME_DURATION = 120;
 // Points awarded per letter correctly placed. Because answers vary widely in
 // length (8 to 15 letters), scoring by letter keeps long answers worth the
 // time they cost instead of paying a flat rate for a much slower round.
@@ -21,15 +22,23 @@ interface GuextaState {
   timeLeft: number;
   isPlaying: boolean;
   isGameEnded: boolean;
+  /**
+   * True for the brief window after the clock hits zero, while the missed
+   * attraction is revealed. The end screen waits on this so the player sees the
+   * answer instead of being cut straight to "TIME UP!".
+   */
+  timeUp: boolean;
   /** True briefly after a correct answer, to show the completed word. */
   justSolved: boolean;
   /** Attractions already used, so they are not repeated. */
   usedIndexes: number[];
 
   initializeGame: () => void;
+  startGame: () => void;
   placeTile: (tileId: string, slotIndex: number) => void;
   returnTile: (slotIndex: number) => void;
   tickTimer: () => void;
+  finishGame: () => void;
   resetGame: () => void;
   clearProgress: () => void;
 }
@@ -229,9 +238,17 @@ export const useGuextaStore = create<GuextaState>((set, get) => ({
   timeLeft: GAME_DURATION,
   isPlaying: false,
   isGameEnded: false,
+  timeUp: false,
   justSolved: false,
   usedIndexes: [],
 
+  /**
+   * Builds the first round and leaves it PAUSED.
+   *
+   * isPlaying stays false until startGame() runs, which happens when the player
+   * dismisses the how-to-play popup. That keeps the clock from ticking while
+   * they are still reading the rules.
+   */
   initializeGame: () => {
     const first = ATTRACTIONS[Math.floor(Math.random() * ATTRACTIONS.length)];
     set({
@@ -239,12 +256,16 @@ export const useGuextaStore = create<GuextaState>((set, get) => ({
       score: 0,
       solvedCount: 0,
       timeLeft: GAME_DURATION,
-      isPlaying: true,
+      isPlaying: false,
       isGameEnded: false,
+      timeUp: false,
       justSolved: false,
       usedIndexes: [ATTRACTIONS.indexOf(first)],
     });
   },
+
+  /** Starts the clock. Called once the instructions popup is closed. */
+  startGame: () => set({ isPlaying: true }),
 
   /**
    * Moves a tile from the bank into a slot. If the target slot already holds a
@@ -353,9 +374,14 @@ export const useGuextaStore = create<GuextaState>((set, get) => ({
       return;
     }
 
+    // Clock has run out. Hold isGameEnded back so the component can reveal the
+    // attraction the player ran out of time on; it calls finishGame() afterwards.
     playSound(loseAudio);
-    set({ isPlaying: false, isGameEnded: true });
+    set({ isPlaying: false, timeUp: true });
   },
+
+  /** Shows the end screen. Called once the reveal has finished. */
+  finishGame: () => set({ isGameEnded: true, timeUp: false }),
 
   resetGame: () => {
     set({
@@ -367,6 +393,7 @@ export const useGuextaStore = create<GuextaState>((set, get) => ({
       timeLeft: GAME_DURATION,
       isPlaying: false,
       isGameEnded: false,
+      timeUp: false,
       justSolved: false,
       usedIndexes: [],
     });

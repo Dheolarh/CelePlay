@@ -6,11 +6,20 @@ interface Square15Store {
   grid: number[];
   gameState: GameState;
   isPeeking: boolean;
+  /**
+   * True while the how-to-play card is on screen.
+   *
+   * The clock is frozen until this clears, so reading the rules does not cost
+   * the player time.
+   */
+  isAwaitingStart: boolean;
   timeLeft: number;
   score: number;
   isWon: boolean;
   
   initializeGame: () => void;
+  /** Releases the hold on the clock. Called when the instructions are dismissed. */
+  startGame: () => void;
   movePiece: (index: number) => void;
   setPeeking: (peeking: boolean) => void;
   tickTimer: () => void;
@@ -18,6 +27,15 @@ interface Square15Store {
 }
 
 const SOLVED_STATE = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+// Two minutes, matching the how-to-play card for this game.
+// Declared once so the initial state, a new game and a reset cannot drift apart.
+const GAME_DURATION = 120;
+
+/** Maximum attainable score, exported so the UI does not hardcode it separately. */
+export const MAX_SCORE = 150;
+
+export { GAME_DURATION };
 
 const calculateScore = (grid: number[]) => {
   let score = 0;
@@ -69,7 +87,8 @@ export const useSquare15Store = create<Square15Store>((set, get) => ({
   grid: [...SOLVED_STATE],
   gameState: 'playing',
   isPeeking: false,
-  timeLeft: 180,
+  isAwaitingStart: false,
+  timeLeft: GAME_DURATION,
   score: 0,
   isWon: false,
 
@@ -79,11 +98,15 @@ export const useSquare15Store = create<Square15Store>((set, get) => ({
       grid: newGrid,
       gameState: 'playing',
       isPeeking: false,
-      timeLeft: 180,
+      // Hold the clock until startGame() is called.
+      isAwaitingStart: true,
+      timeLeft: GAME_DURATION,
       score: calculateScore(newGrid),
       isWon: false,
     });
   },
+
+  startGame: () => set({ isAwaitingStart: false }),
 
   movePiece: (index: number) => {
     const { grid, gameState } = get();
@@ -117,6 +140,8 @@ export const useSquare15Store = create<Square15Store>((set, get) => ({
 
   tickTimer: () => {
     set((state) => {
+      // Frozen until the instructions are dismissed.
+      if (state.isAwaitingStart) return state;
       if (state.gameState !== 'playing') return state;
       
       const newTime = state.timeLeft - 1;
@@ -132,7 +157,8 @@ export const useSquare15Store = create<Square15Store>((set, get) => ({
       grid: [...SOLVED_STATE],
       gameState: 'playing',
       isPeeking: false,
-      timeLeft: 180,
+      isAwaitingStart: false,
+      timeLeft: GAME_DURATION,
       score: 0,
       isWon: false,
     });

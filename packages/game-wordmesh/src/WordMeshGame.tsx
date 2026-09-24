@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useWordMeshStore, GAME_DURATION } from './store';
 import { pickGridSize } from './puzzles';
+import { HowToPlayOverlay } from '@celeplay/shared-ui';
 
 export interface WordMeshGameProps {
   themeLogoUrl: string;
@@ -10,6 +11,8 @@ export interface WordMeshGameProps {
   /** Optional word bank override; defaults to the built-in Nigerian sites list. */
   onGameEnd: (score: number, timeTaken: number) => void;
   onExit: () => void;
+  /** Optional how-to-play card shown before the round begins. */
+  howToPlayImageUrl?: string;
 }
 
 const ACCENT_RED = '#E53935';
@@ -22,6 +25,7 @@ export const WordMeshGame: React.FC<WordMeshGameProps> = ({
   themeSecondaryColor,
   onGameEnd,
   onExit,
+  howToPlayImageUrl,
 }) => {
   const {
     grid,
@@ -37,6 +41,7 @@ export const WordMeshGame: React.FC<WordMeshGameProps> = ({
     isWon,
     lastFoundCells,
     initializeGame,
+    startGame,
     startSelection,
     previewSelection,
     commitSelection,
@@ -55,6 +60,15 @@ export const WordMeshGame: React.FC<WordMeshGameProps> = ({
     width: typeof window !== 'undefined' ? window.innerWidth : CONTENT_WIDTH,
     height: typeof window !== 'undefined' ? window.innerHeight : BASE_HEIGHT,
   }));
+
+  /**
+   * True while the instructions are on screen.
+   *
+   * Starts true when a card is supplied, so a fresh board is paused until the
+   * player dismisses it. The puzzle is generated as usual; only the clock is
+   * held back.
+   */
+  const [isShowingHowToPlay, setIsShowingHowToPlay] = useState(Boolean(howToPlayImageUrl));
 
   useEffect(() => {
     const handleResize = () => {
@@ -83,13 +97,17 @@ export const WordMeshGame: React.FC<WordMeshGameProps> = ({
 
   useEffect(() => {
     // Rebuild when the chosen size changes, when the board is empty, or when a
-    // game exists but is not running. The last condition self-heals the
-    // StrictMode case where an effect cleanup stopped the timer after mount.
+    // finished game is still on screen.
+    //
+    // Note this must NOT react to `!isPlaying`: a freshly initialised board is
+    // deliberately paused while the how-to-play popup is open, so treating
+    // "not playing" as "needs init" would rebuild the board in a loop and the
+    // player could never dismiss the popup.
     const state = useWordMeshStore.getState();
     const needsInit =
       lastGridSize.current !== desiredGridSize ||
       state.grid.length === 0 ||
-      !state.isPlaying;
+      state.isGameEnded;
 
     if (!needsInit) return;
 
@@ -544,6 +562,20 @@ export const WordMeshGame: React.FC<WordMeshGameProps> = ({
             VIEW LEADERBOARD
           </button>
         </div>
+      )}
+
+      {/* Instructions, shown before play. The board is generated but paused;
+          dismissing this is what starts the clock. */}
+      {howToPlayImageUrl && isShowingHowToPlay && (
+        <HowToPlayOverlay
+          imageUrl={howToPlayImageUrl}
+          gameName="WordMesh"
+          accentColor={ACCENT_RED}
+          onClose={() => {
+            setIsShowingHowToPlay(false);
+            startGame();
+          }}
+        />
       )}
     </div>
   );

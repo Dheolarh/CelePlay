@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { fetchLeaderboard, playerKeyFor, type LeaderboardEntry } from '@celeplay/core-logic';
 import { getStoredPhone } from '../hooks/useScoreSubmit';
+import { CallToActionOverlay } from '../components/CallToActionOverlay';
 
 /** Turns a 1-based rank into the ordinal label the table displays. */
 const ordinal = (rank: number): string => {
@@ -26,6 +27,25 @@ export const LeaderboardScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
+  /**
+   * Call-to-action flow.
+   *
+   * 'hidden'  - not shown (before the 3s delay, or once dismissed from EXIT)
+   * 'initial' - the automatic popup 3 seconds after the board appears
+   * 'exit'    - shown when EXIT is pressed; leads to the game selection screen
+   */
+  const [ctaMode, setCtaMode] = useState<'hidden' | 'initial' | 'exit'>('hidden');
+
+  /** Drives the spin animation on the refresh button while a fetch is running. */
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Reveal the flier shortly after the board appears, so it does not cover the
+  // scores before the player has had a chance to read them.
+  useEffect(() => {
+    const timer = setTimeout(() => setCtaMode('initial'), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const updateScale = () => {
       const widthScale = window.innerWidth / 400;
@@ -37,27 +57,56 @@ export const LeaderboardScreen: React.FC = () => {
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
+  /**
+   * Fetches the board into state.
+   *
+   * Exposed through a `useCallback` so both the initial mount effect and the
+   * refresh button share one implementation. `cancelledRef` is threaded in
+   * rather than captured, because the effect's cleanup needs to invalidate a
+   * fetch that the button may have started later.
+   */
+  const loadEntries = React.useCallback(async (isCancelled: () => boolean) => {
+    try {
+      const rows = await fetchLeaderboard(50);
+      // Guard against setting state after unmount, which React warns about.
+      if (!isCancelled()) {
+        setEntries(rows);
+        setLoadError('');
+      }
+    } catch (err) {
+      console.error('[leaderboard] load failed:', err);
+      if (!isCancelled()) setLoadError('Could not load scores.');
+    } finally {
+      if (!isCancelled()) setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
+    const isCancelled = () => cancelled;
 
-    fetchLeaderboard(50)
-      .then((rows) => {
-        // Guard against setting state after unmount, which React warns about.
-        if (cancelled) return;
-        setEntries(rows);
-      })
-      .catch((err) => {
-        console.error('[leaderboard] load failed:', err);
-        if (!cancelled) setLoadError('Could not load scores.');
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
+    void loadEntries(isCancelled);
+
+    // Finish screens navigate here without waiting for the score write, so the
+    // first fetch can land a moment before the new score is stored. A single
+    // follow-up fetch covers that gap without polling.
+    const settle = setTimeout(() => {
+      void loadEntries(isCancelled);
+    }, 1200);
 
     return () => {
       cancelled = true;
+      clearTimeout(settle);
     };
-  }, []);
+  }, [loadEntries]);
+
+  /** Manual refresh, for when a player finishes on another phone. */
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    await loadEntries(() => false);
+    setIsRefreshing(false);
+  };
 
   // Identify the current player by the phone number saved at registration.
   const myKey = (() => {
@@ -147,6 +196,10 @@ export const LeaderboardScreen: React.FC = () => {
             background: white;
             border-radius: 10px;
           }
+          @keyframes lb-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+          }
         `}</style>
 
         {/* Leaderboard Table Container */}
@@ -235,32 +288,92 @@ export const LeaderboardScreen: React.FC = () => {
           )}
         </div>
 
-        {/* Exit Button */}
-        <button 
-          onClick={() => navigate('/games', { replace: true })}
-          style={{
-            marginTop: '35px',
-            padding: '10px 45px',
-            backgroundColor: '#E53935',
-            color: 'white',
-            border: '3px solid white',
-            borderRadius: '35px',
-            fontWeight: 900,
-            fontSize: '26px',
-            cursor: 'pointer',
-            boxShadow: '0 8px 20px rgba(0,0,0,0.6)',
-            transition: 'transform 0.2s ease',
-            letterSpacing: '2px',
-            fontFamily: "'Outfit', sans-serif"
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          EXIT
-        </button>
+        {/* Bottom controls. The refresh sits beside EXIT rather than in the
+            table header so it cannot be mistaken for a sort control. */}
+        <div style={{
+          marginTop: '35px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '14px',
+        }}>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            aria-label="Refresh leaderboard"
+            title="Refresh leaderboard"
+            style={{
+              width: '52px',
+              height: '52px',
+              flexShrink: 0,
+              borderRadius: '50%',
+              backgroundColor: 'white',
+              border: '3px solid #E53935',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: isRefreshing ? 'default' : 'pointer',
+              padding: 0,
+              boxShadow: '0 8px 20px rgba(0,0,0,0.6)',
+            }}
+          >
+            {/* Circular arrow, rotated continuously while a fetch is in flight. */}
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#E53935"
+              strokeWidth="2.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                animation: isRefreshing ? 'lb-spin 0.9s linear infinite' : 'none',
+                display: 'block',
+              }}
+            >
+              <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+              <path d="M20 5v6h-6" />
+            </svg>
+          </button>
+
+          <button 
+            onClick={() => setCtaMode('exit')}
+            style={{
+              padding: '10px 45px',
+              backgroundColor: '#E53935',
+              color: 'white',
+              border: '3px solid white',
+              borderRadius: '35px',
+              fontWeight: 900,
+              fontSize: '26px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.6)',
+              transition: 'transform 0.2s ease',
+              letterSpacing: '2px',
+              fontFamily: "'Outfit', sans-serif"
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            EXIT
+          </button>
+        </div>
 
       </div>
       </div>
+
+      {/* Promotional flier. Shown automatically after a short delay so the
+          player can read the board first, then again on EXIT. Both offer the
+          same choice: come back to the board, or leave for game selection. */}
+      {ctaMode !== 'hidden' && (
+        <CallToActionOverlay
+          imageUrl="/assets/static/Call to action Flier.webp"
+          mode={ctaMode === 'initial' ? 'auto' : 'exit'}
+          onViewLeaderboard={() => setCtaMode('hidden')}
+          onQuit={() => navigate('/games', { replace: true })}
+        />
+      )}
     </div>
   );
 };

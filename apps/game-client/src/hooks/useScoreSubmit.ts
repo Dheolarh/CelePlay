@@ -1,4 +1,8 @@
-import { submitScoreAndRefresh, type GameId } from '@celeplay/core-logic';
+import {
+  submitScoreAndRefresh,
+  AlreadyPlayedError,
+  type GameId,
+} from '@celeplay/core-logic';
 
 /** localStorage key holding the phone number of the signed-in player. */
 export const PLAYER_PHONE_KEY = 'celeplay:phone';
@@ -13,6 +17,9 @@ export const getStoredPhone = (): string | null => {
   }
 };
 
+/** Builds the URL of a game's screen from its id. */
+export const gamePath = (game: GameId): string => `/${game}`;
+
 /**
  * Records a finished game's score against the current player.
  *
@@ -21,9 +28,9 @@ export const getStoredPhone = (): string | null => {
  * than trapping someone on a frozen screen. Failures are logged so they can be
  * diagnosed after the event.
  *
- * The promise RESOLVES once the write has finished, so callers can await it
- * before navigating. Navigating first is what previously made the leaderboard
- * look stale - it fetched before the score had been written.
+ * A rejected attempt (the player already finished this game) is treated as a
+ * normal outcome rather than an error - the first score is the one that counts,
+ * so there is nothing to overwrite and nothing to report.
  */
 export const submitGameScore = async (game: GameId, score: number): Promise<boolean> => {
   const phone = getStoredPhone();
@@ -36,26 +43,28 @@ export const submitGameScore = async (game: GameId, score: number): Promise<bool
     await submitScoreAndRefresh(phone, game, score);
     return true;
   } catch (err) {
+    if (err instanceof AlreadyPlayedError) {
+      // Expected when a game is somehow replayed. Not worth surfacing.
+      console.info(`[score] "${game}" was already played; keeping the first result.`);
+      return false;
+    }
     console.error(`[score] Failed to save "${game}" score of ${score}:`, err);
     return false;
   }
 };
 
 /**
- * Waits for a score write, but gives up after `timeoutMs`.
+ * Fires a score submission without waiting for it.
  *
- * A dead connection can leave a request hanging for a long time. Racing the
- * write against a timer means a slow network costs the player a brief pause
- * instead of an indefinite wait. The write itself is not cancelled, so it can
- * still land after the timeout.
+ * The write and the screen transition used to be sequential, which meant every
+ * finish sat on the results screen for as long as the network took. The score
+ * write is independent of what the player sees next, so it is started and then
+ * left to settle in the background. The leaderboard re-fetches when it mounts,
+ * which covers the brief moment where the write is still in flight.
+ *
+ * The returned promise is intentionally not awaited by callers; it resolves to
+ * the submission result and rejects only if something unforeseen is thrown.
  */
-export const submitGameScoreWithTimeout = async (
-  game: GameId,
-  score: number,
-  timeoutMs = 4000
-): Promise<void> => {
-  await Promise.race([
-    submitGameScore(game, score),
-    new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
-  ]);
+export const submitGameScoreInBackground = (game: GameId, score: number): void => {
+  void submitGameScore(game, score);
 };

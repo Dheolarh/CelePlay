@@ -12,6 +12,12 @@
  *   players_private/{key}     -> { phone }                  (NOT readable)
  *   scores/{key}/{game}       -> { score, updatedAt }       (world readable)
  *   leaderboard/{key}         -> { name, total, games }     (world readable)
+ *   played/{key}/{game}       -> true                       (world readable)
+ *
+ * The `played` node is what enforces one attempt per game. A database rule
+ * rejects any write to a child that already exists, so the FIRST write wins and
+ * every later attempt is refused server-side. It is world readable so the game
+ * selection screen can grey out games the player has already finished.
  *
  * Phone numbers live in a separate node whose read rule is false, so they can
  * never be fetched over HTTP. The owner can still see and export them from the
@@ -97,6 +103,14 @@ const getJson = async <T>(path: string): Promise<T | null> => {
   return data ?? null;
 };
 
+/** Raised when the database refuses a write because the record already exists. */
+export class AlreadyPlayedError extends Error {
+  constructor(game: string) {
+    super(`"${game}" has already been played.`);
+    this.name = 'AlreadyPlayedError';
+  }
+}
+
 /**
  * Saves a player, splitting personal data across two nodes.
  *
@@ -166,6 +180,85 @@ export const getPlayerScores = async (phone: string): Promise<Record<string, num
   return scores;
 };
 
+/** Reads the set of games a player has already finished. */
+export const fetchPlayedGames = async (phone: string): Promise<GameId[]> => {
+  const playerKey = playerKeyFor(phone);
+  if (!playerKey) return [];
+
+  const raw = (await getJson<Record<string, boolean>>(`played/${playerKey}`)) ?? {};
+  // Filter against GAMES so a stray key cannot lock out a game that has no tile.
+  return GAMES.filter((game) => raw[game] === true);
+};
+
+/**
+ * Claims a player's one attempt at a game.
+ *
+ * The work is done by the database rule, not by this function: `played` only
+ * accepts a write when the child does not already exist, so the first writer
+ * wins and every later attempt is refused with HTTP 401. This function just
+ * translates that refusal into `AlreadyPlayedError`.
+ *
+ * A plain write is attempted FIRST rather than an ETag conditional write. An
+ * earlier version did the opposite - `if-match: false` on an absent node, with a
+ * plain write as the fallback - and because `If-Match` is an HTTP *request*
+ * header rather than a CORS-safelisted one, it triggered a preflight that
+ * Firebase does not answer. Every genuine first play was rejected with 412 and
+ * silently fell through to the fallback, so nobody was ever locked out.
+ *
+ * A player who had scores recorded BEFORE this feature existed has no `played`
+ * entry, so their lock is backfilled from their existing score. Without that,
+ * anyone who played earlier would get one free replay.
+ *
+ * Throws `AlreadyPlayedError` when the attempt is refused.
+ */
+export const claimPlay = async (phone: string, game: GameId): Promise<void> => {
+  const playerKey = playerKeyFor(phone);
+  if (!playerKey) throw new Error('A phone number is required.');
+
+  const path = `played/${playerKey}/${game}`;
+
+  // 1. Already locked. This covers every replay, and is the path most callers
+  //    take, so it is checked before any write is attempted.
+  if (await getJson<boolean>(path)) throw new AlreadyPlayedError(game);
+
+  // 2. Backfill for players whose scores predate the lock node.
+  const existing = await getJson<PlayerScore>(`scores/${playerKey}/${game}`);
+  if (existing) {
+    // Best effort: if this fails the rule still refuses the write below.
+    await put(path, true).catch(() => undefined);
+    throw new AlreadyPlayedError(game);
+  }
+
+  // 3. Claim it. A plain PUT, so no preflight - the rule is what enforces
+  //    write-once. Two simultaneous finishes would both reach this line, but
+  //    only the first to arrive is accepted.
+  const res = await fetch(dbUrl(path), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: 'true',
+  });
+
+  // Firebase denies a rule failure with 401 on Realtime Database (a 403 is also
+  // possible behind some proxies), so treat both as "already claimed".
+  if (res.status === 401 || res.status === 403) throw new AlreadyPlayedError(game);
+
+  // 412 arrives from a conditional write. This code no longer sends one, but a
+  // cached client still running the old bundle might, so handle it rather than
+  // letting it surface as an unhandled failure.
+  if (res.status === 412) throw new AlreadyPlayedError(game);
+
+  if (!res.ok) {
+    throw new Error(`PUT ${path} failed: ${res.status} ${await res.text()}`);
+  }
+};
+
+/** Clears every play lock for a player. Only used when re-registering a number. */
+export const resetPlayedGames = async (phone: string): Promise<void> => {
+  const playerKey = playerKeyFor(phone);
+  if (!playerKey) return;
+  await put(`played/${playerKey}`, null);
+};
+
 /**
  * Recomputes and stores a player's leaderboard total.
  *
@@ -199,12 +292,24 @@ export const refreshLeaderboardEntry = async (phone: string): Promise<void> => {
   });
 };
 
-/** Records a score and refreshes the derived leaderboard row in one call. */
+/**
+ * Records a score, claims the player's one attempt, and refreshes the derived
+ * leaderboard row.
+ *
+ * Order matters. The play lock is claimed FIRST, so a replay is rejected before
+ * it can touch the scores node. A player who quits mid-game never reaches this
+ * function, so abandoning a game costs them nothing.
+ *
+ * Returns the score that counts, which is the existing one when the player is
+ * replaying a game they have already finished.
+ */
 export const submitScoreAndRefresh = async (
   phone: string,
   game: GameId,
   score: number
 ): Promise<number> => {
+  await claimPlay(phone, game);
+
   const best = await submitScore(phone, game, score);
   await refreshLeaderboardEntry(phone);
   return best;
