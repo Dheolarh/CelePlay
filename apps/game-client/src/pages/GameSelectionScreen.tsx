@@ -21,10 +21,9 @@ export const GameSelectionScreen: React.FC = () => {
   /**
    * Games the signed-in player has already finished.
    *
-   * Read from the `played` node, which the database only ever lets be written
-   * once per game. A failed read leaves the list empty, so an unreachable
-   * database degrades to "everything is playable" rather than locking the
-   * player out of the whole event.
+   * Games are always replayable, so this is informational only: it drives the
+   * "already counted" hint on a tile, not whether the tile can be tapped. A
+   * failed read leaves the list empty, which just hides the hint.
    */
   const [playedGames, setPlayedGames] = useState<GameId[]>([]);
 
@@ -45,9 +44,6 @@ export const GameSelectionScreen: React.FC = () => {
       cancelled = true;
     };
   }, []);
-
-  // Every game finished means the event is done for this player.
-  const allGamesPlayed = playedGames.length > 0 && playedGames.length === 4;
 
   // Proportional Scaling Logic
   const [scale, setScale] = useState(1);
@@ -186,40 +182,14 @@ export const GameSelectionScreen: React.FC = () => {
           margin: 0,
           letterSpacing: '-0.5px'
         }}>
-          {allGamesPlayed ? 'ALL GAMES PLAYED' : 'PICK A GAME'}
+          PICK A GAME
         </h2>
 
-        {/* Once every game is done there is nothing left to pick, so the prompt
-            is replaced with the only action still worth taking. */}
-        {allGamesPlayed ? (
-          <button
-            className="animate-slide-up delay-200"
-            onClick={() => navigate('/leaderboard')}
-            style={{
-              marginTop: '12px',
-              padding: '10px 30px',
-              backgroundColor: '#E53935',
-              color: 'white',
-              border: '3px solid #111',
-              borderRadius: '35px',
-              fontWeight: 900,
-              fontSize: '18px',
-              letterSpacing: '1px',
-              cursor: 'pointer',
-              fontFamily: "'Outfit', sans-serif",
-              boxShadow: '0 6px 16px rgba(0,0,0,0.3)',
-            }}
-          >
-            VIEW LEADERBOARD
-          </button>
-        ) : (
-          /* Thick Red Arrow */
-          <div className="animate-slide-up delay-200" style={{ marginTop: '5px', marginBottom: '25px' }}>
-            <svg width="45" height="45" viewBox="0 0 24 24" fill={theme.secondary_color} xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 21L20 12H15V3H9V12H4L12 21Z" />
-            </svg>
-          </div>
-        )}
+        <div className="animate-slide-up delay-200" style={{ marginTop: '5px', marginBottom: '25px' }}>
+          <svg width="45" height="45" viewBox="0 0 24 24" fill={theme.secondary_color} xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21L20 12H15V3H9V12H4L12 21Z" />
+          </svg>
+        </div>
 
         {/* Static Game List */}
         <div className="animate-slide-up delay-300" style={{
@@ -234,7 +204,9 @@ export const GameSelectionScreen: React.FC = () => {
         }}>
           {games.map((game) => {
             const isPlayed = playedGames.includes(game.id as GameId);
-            const isEnabled = game.path !== '#' && !isPlayed;
+            // Every game is always tappable. `isPlayed` only changes the small
+            // "counted" hint, because replays are allowed but do not save.
+            const isEnabled = game.path !== '#';
 
             return (
               <div 
@@ -270,25 +242,21 @@ export const GameSelectionScreen: React.FC = () => {
                   }} 
                 />
 
-                {/* Sits over the logo once the game has been finished, so the
-                    tile reads as unavailable without the logo vanishing. */}
+                {/* A small badge rather than an overlay, so a counted game
+                    still reads as playable. */}
                 {isPlayed && (
                   <span style={{
-                    position: 'absolute',
-                    top: '50%',
-                    transform: 'translateY(-50%) rotate(-8deg)',
-                    backgroundColor: '#111',
+                    marginTop: '4px',
+                    backgroundColor: '#16a34a',
                     color: 'white',
-                    fontWeight: 900,
-                    fontSize: '13px',
-                    letterSpacing: '2px',
-                    padding: '5px 14px',
+                    fontWeight: 800,
+                    fontSize: '10.5px',
+                    letterSpacing: '1.2px',
+                    padding: '3px 10px',
                     borderRadius: '20px',
-                    border: '2px solid white',
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.35)',
                     pointerEvents: 'none',
                   }}>
-                    PLAYED
+                    SCORE COUNTED
                   </span>
                 )}
               </div>

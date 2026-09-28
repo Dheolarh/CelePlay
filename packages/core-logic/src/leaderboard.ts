@@ -293,15 +293,18 @@ export const refreshLeaderboardEntry = async (phone: string): Promise<void> => {
 };
 
 /**
- * Records a score, claims the player's one attempt, and refreshes the derived
- * leaderboard row.
+ * Records a player's FIRST score for a game and refreshes the leaderboard row.
  *
- * Order matters. The play lock is claimed FIRST, so a replay is rejected before
- * it can touch the scores node. A player who quits mid-game never reaches this
- * function, so abandoning a game costs them nothing.
+ * Games are always replayable, so this is the only place the "first play counts"
+ * rule is enforced. The `played` node is claimed with a write-once PUT: the
+ * first finish claims it and its score is saved, and every later finish is
+ * refused by the database rule and leaves the leaderboard untouched.
  *
- * Returns the score that counts, which is the existing one when the player is
- * replaying a game they have already finished.
+ * The lock check is deliberately last-line-of-defence rather than a pre-check,
+ * so a replay that races a first play cannot slip a second score through.
+ *
+ * Returns the score that counts. On a replay that is the original score, which
+ * callers can ignore - the player still sees their own result on screen.
  */
 export const submitScoreAndRefresh = async (
   phone: string,
