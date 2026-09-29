@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSquare15Store, GAME_DURATION, MAX_SCORE } from './store';
-import { HowToPlayOverlay } from '@celeplay/shared-ui';
+import { HowToPlayOverlay, QuitButton } from '@celeplay/shared-ui';
 
 export interface Square15GameProps {
   themeBannerUrl: string;
@@ -10,6 +10,15 @@ export interface Square15GameProps {
   onExit: () => void;
   /** Optional how-to-play card shown before the clock starts. */
   howToPlayImageUrl?: string;
+  /**
+   * Builds the URL of a numbered tile for the active artwork batch.
+   *
+   * Batches name their tiles differently (`sq0.webp` vs `sq_00.webp`), so the
+   * caller resolves the naming and the game stays unaware of folder layout.
+   */
+  tileUrl?: (id: number) => string;
+  /** Full assembled image revealed by the hint button. */
+  fullImageUrl?: string;
 }
 
 export const Square15Game: React.FC<Square15GameProps> = ({
@@ -17,7 +26,10 @@ export const Square15Game: React.FC<Square15GameProps> = ({
   themePrimaryColor,
   themeSecondaryColor,
   onGameEnd,
+  onExit,
   howToPlayImageUrl,
+  tileUrl,
+  fullImageUrl,
 }) => {
   const {
     grid,
@@ -329,7 +341,13 @@ export const Square15Game: React.FC<Square15GameProps> = ({
           }}>
             {score}
           </div>
-        </div>
+          {/* Abandoning the round saves no score and does not count as a play. */}
+          <QuitButton
+            onQuit={onExit}
+            timeLeft={timeLeft}
+            duration={GAME_DURATION}
+            hidden={gameState === 'ended' || isShowingHowToPlay}
+          />        </div>
 
         {/* Lightbulb Hint Button */}
         <div 
@@ -394,7 +412,7 @@ export const Square15Game: React.FC<Square15GameProps> = ({
                   }}
                 >
                   <img 
-                    src={`/assets/dynamic/sq${id}.webp`} 
+                    src={tileUrl ? tileUrl(id) : `/assets/dynamic/sq${id}.webp`}
                     alt={`Piece ${id}`} 
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
@@ -415,7 +433,7 @@ export const Square15Game: React.FC<Square15GameProps> = ({
               display: 'flex',
               flexDirection: 'column'
             }}>
-              <img src="/assets/dynamic/fullimage.webp" alt="Hint" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={fullImageUrl ?? '/assets/dynamic/fullimage.webp'} alt="Hint" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               
               {/* Close Button */}
               {isPeeking && (

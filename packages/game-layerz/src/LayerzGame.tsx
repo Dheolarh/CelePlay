@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLayerzStore } from './store';
 import type { LayerPiece } from './store';
+import { QuitButton } from '@celeplay/shared-ui';
 
 export interface LayerzGameProps {
   themeBannerUrl: string;
@@ -16,7 +17,8 @@ export const LayerzGame: React.FC<LayerzGameProps> = ({
   themePrimaryColor,
   themeSecondaryColor,
   pieces,
-  onGameEnd
+  onGameEnd,
+  onExit,
 }) => {
   const {
     gameState,
@@ -442,8 +444,18 @@ export const LayerzGame: React.FC<LayerzGameProps> = ({
         </div>
 
         {/* Bottom Banner */}
-        <div style={{ width: '90%', marginTop: '30px' }}>
+        <div style={{ width: '90%', marginTop: '30px', position: 'relative' }}>
           <img src={themeBannerUrl} alt="Banner" style={{ width: '100%', borderRadius: '10px' }} />
+
+          {/* Abandoning the round saves no score and does not count as a play. */}
+          <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 20 }}>
+            <QuitButton
+              onQuit={onExit}
+              timeLeft={gameTimeLeft}
+              duration={60}
+              hidden={gameState === 'ended'}
+            />
+          </div>
         </div>
 
         {/* Bottom Logo */}

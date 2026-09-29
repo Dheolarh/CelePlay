@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useFlipiziStore } from './store';
+import { QuitButton } from '@celeplay/shared-ui';
 
 interface FlipiziGameProps {
   themePrimaryColor: string;
@@ -13,7 +14,8 @@ export const FlipiziGame: React.FC<FlipiziGameProps> = ({
   themePrimaryColor,
   themeSecondaryColor,
   themeBannerUrl,
-  onGameEnd
+  onGameEnd,
+  onExit,
 }) => {
   const {
     gameState, timeLeft, score, chancesLeft, slots,
@@ -323,8 +325,18 @@ export const FlipiziGame: React.FC<FlipiziGameProps> = ({
         </div>
 
         {/* Bottom Banner */}
-        <div style={{ width: '90%', marginTop: 'auto', marginBottom: '20px', zIndex: 10 }}>
+        <div style={{ width: '90%', marginTop: 'auto', marginBottom: '20px', zIndex: 10, position: 'relative' }}>
           <img src={themeBannerUrl} alt="Banner" style={{ width: '100%', borderRadius: '10px', boxShadow: '0 5px 15px rgba(0,0,0,0.3)' }} />
+
+          {/* Abandoning the round saves no score and does not count as a play. */}
+          <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 20 }}>
+            <QuitButton
+              onQuit={onExit}
+              timeLeft={timeLeft}
+              duration={60}
+              hidden={gameState === 'ended'}
+            />
+          </div>
         </div>
         
         {/* Flipizi Logo */}

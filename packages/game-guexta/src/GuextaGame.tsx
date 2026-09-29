@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGuextaStore, GAME_DURATION } from './store';
 import { layoutRows } from './attractions';
-import { HowToPlayOverlay } from '@celeplay/shared-ui';
+import { HowToPlayOverlay, QuitButton } from '@celeplay/shared-ui';
 
 export interface GuextaGameProps {
   themeBannerUrl: string;
@@ -228,22 +228,17 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
       slots.every((s, i) => s?.char === current.letters[i])
   );
 
-  // Hold the end screen for a beat so the answer can be shown. The store sets
-  // `timeUp` when the clock hits zero but leaves `isGameEnded` false until
-  // finishGame() runs, which is what gives this delay somewhere to happen.
-  const REVEAL_DELAY_MS = 3000;
-
+  // The end screen is reached only after the player dismisses the answer reveal.
+  // The store sets `timeUp` when the clock hits zero but leaves `isGameEnded`
+  // false until finishGame() runs, which is what gives the reveal somewhere to
+  // happen. Nothing advances automatically, so the player can read the answer
+  // for as long as they need.
   useEffect(() => {
     if (!timeUp) return;
 
-    // Solved on the buzzer, or nothing to reveal: no reason to linger.
-    if (isCurrentSolved) {
-      finishGame();
-      return;
-    }
-
-    const timer = setTimeout(() => finishGame(), REVEAL_DELAY_MS);
-    return () => clearTimeout(timer);
+    // Solved on the buzzer: there is no wrong answer to reveal, so the result
+    // screen can follow immediately.
+    if (isCurrentSolved) finishGame();
   }, [timeUp, isCurrentSolved, finishGame]);
 
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
@@ -503,12 +498,23 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
         }}
       >
         {/* Banner stays outside the slate */}
-        <div style={{ width: '96%', marginTop: '40px' }}>
+        <div style={{ width: '96%', marginTop: '40px', position: 'relative' }}>
           <img
             src={themeBannerUrl}
             alt="Banner"
             style={{ width: '100%', borderRadius: '10px', display: 'block' }}
           />
+
+          {/* Quit sits over the banner corner, matching the other games.
+              Leaving saves no score and does not count as a play. */}
+          <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 20 }}>
+            <QuitButton
+              onQuit={onExit}
+              timeLeft={timeLeft}
+              duration={GAME_DURATION}
+              hidden={isGameEnded || isShowingHowToPlay}
+            />
+          </div>
         </div>
 
         {/* ---- SLATE: the play surface ---- */}
@@ -746,7 +752,7 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
           </div>
         </div>
 
-        {/* Progress + exit, below the slate */}
+        {/* Progress + quit, below the slate */}
         <div
           style={{
             marginBottom: '20px',
@@ -755,18 +761,11 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
             fontSize: '14px',
             textShadow: '0 2px 6px rgba(0,0,0,0.7)',
             display: 'flex',
+            alignItems: 'center',
             gap: '18px',
           }}
         >
           <span>SOLVED {solvedCount}</span>
-          <span
-            onClick={onExit}
-            role="button"
-            title="Back to games"
-            style={{ cursor: 'pointer', textDecoration: 'underline' }}
-          >
-            EXIT
-          </span>
         </div>
       </div>
 
@@ -844,60 +843,47 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
               display: 'flex',
               flexWrap: 'wrap',
               justifyContent: 'center',
-              // Letters and word gaps both flow in one wrapped row.
-              gap: '10px',
-              rowGap: '18px',
-              maxWidth: '420px',
+              maxWidth: '460px',
             }}
           >
-            {current.name.split('').map((ch, i) => {
-              if (ch === ' ') {
-                return (
-                  <span
-                    key={`gap-${i}`}
-                    // A spacer sized to one tile, so wide answers break cleanly.
-                    style={{ width: `${SLOT_SIZE}px`, height: `${SLOT_SIZE}px` }}
-                  />
-                );
-              }
-
-              return (
-                <span
-                  key={`reveal-${i}`}
-                  style={{
-                    width: `${SLOT_SIZE}px`,
-                    height: `${SLOT_SIZE}px`,
-                    flexShrink: 0,
-                    borderRadius: '10px',
-                    backgroundColor: TILE_FACE,
-                    border: `2px solid ${TILE_EDGE}`,
-                    color: TILE_TEXT,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    fontWeight: 800,
-                    fontSize: '24px',
-                    // The 0-offset slab underneath is what gives the tile its
-                    // scrabble depth, matching every other tile in the game.
-                    boxShadow: `0 3px 0 ${TILE_EDGE}, 0 5px 10px rgba(0,0,0,0.3)`,
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  {ch}
-                </span>
-              );
-            })}
+            {/* The answer is shown as plain text rather than letter tiles. Tiles
+                read as something the player can still move or fill in, which is
+                misleading once the round is over. */}
+            <span
+              style={{
+                color: 'white',
+                fontSize: '34px',
+                fontWeight: 900,
+                letterSpacing: '1.5px',
+                textTransform: 'uppercase',
+                lineHeight: 1.25,
+                fontFamily: "'Outfit', sans-serif",
+              }}
+            >
+              {current.name}
+            </span>
           </div>
 
-          <p style={{
-            color: 'white',
-            fontSize: '20px',
-            fontWeight: 800,
-            marginTop: '26px',
-            marginBottom: 0,
-          }}>
-            {current.name}
-          </p>
+          <button
+            type="button"
+            onClick={() => finishGame()}
+            style={{
+              marginTop: '36px',
+              padding: '14px 46px',
+              borderRadius: '30px',
+              border: 'none',
+              backgroundColor: 'white',
+              color: '#111',
+              fontSize: '17px',
+              fontWeight: 800,
+              letterSpacing: '0.5px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.35)',
+              fontFamily: "'Outfit', sans-serif",
+            }}
+          >
+            CONTINUE
+          </button>
         </div>
       )}
 

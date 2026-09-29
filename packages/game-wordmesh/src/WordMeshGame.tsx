@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useWordMeshStore, GAME_DURATION } from './store';
 import { pickGridSize } from './puzzles';
-import { HowToPlayOverlay } from '@celeplay/shared-ui';
+import { HowToPlayOverlay, QuitButton } from '@celeplay/shared-ui';
 
 export interface WordMeshGameProps {
   themeLogoUrl: string;
@@ -307,6 +307,17 @@ export const WordMeshGame: React.FC<WordMeshGameProps> = ({
             alt="Banner"
             style={{ width: '100%', borderRadius: '10px', display: 'block' }}
           />
+
+          {/* Quit sits over the banner corner. Leaving saves no score and does
+              not count as a played game. */}
+          <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 20 }}>
+            <QuitButton
+              onQuit={onExit}
+              timeLeft={timeLeft}
+              duration={GAME_DURATION}
+              hidden={isGameEnded || isShowingHowToPlay}
+            />
+          </div>
 
           {/* Overlay Timer and Score */}
           <div

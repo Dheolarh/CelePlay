@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useKalendilyStore } from './store';
 import type { KalendilyQuestion } from './store';
 import { getDaysInMonth, getFirstDayOfMonth, monthNames, formatTime } from './utils';
+import { QuitButton } from '@celeplay/shared-ui';
 
 export interface KalendilyGameProps {
   themeLogoUrl: string;
@@ -18,7 +19,8 @@ export const KalendilyGame: React.FC<KalendilyGameProps> = ({
   themePrimaryColor,
   themeSecondaryColor,
   questions: initialQuestions,
-  onGameEnd
+  onGameEnd,
+  onExit,
 }) => {
   const { 
     questions,
@@ -205,8 +207,18 @@ export const KalendilyGame: React.FC<KalendilyGameProps> = ({
       }}>
         
         {/* Banner Section */}
-        <div className="animate-slide-up" style={{ width: '90%', marginTop: '50px', display: 'flex', justifyContent: 'center' }}>
+        <div className="animate-slide-up" style={{ width: '90%', marginTop: '50px', display: 'flex', justifyContent: 'center', position: 'relative' }}>
           <img src={themeBannerUrl} alt="Banner" style={{ width: '80%', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }} />
+
+          {/* Abandoning the round saves no score and does not count as a play. */}
+          <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 20 }}>
+            <QuitButton
+              onQuit={onExit}
+              timeLeft={timeLeft}
+              duration={questions.length * 9}
+              hidden={gameState === 'ended'}
+            />
+          </div>
         </div>
 
         {/* Stats Row */}
