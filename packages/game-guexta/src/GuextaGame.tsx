@@ -834,7 +834,7 @@ export const GuextaGame: React.FC<GuextaGameProps> = ({
             letterSpacing: '3px',
             margin: '0 0 18px',
           }}>
-            THE ANSWER WAS
+            ANSWER
           </p>
 
           <div
